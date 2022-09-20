@@ -3,6 +3,7 @@
 #include <fstream>
 #include "Math.h"
 #include "DataTypes.h"
+#include <iostream>
 
 namespace dae
 {
@@ -13,7 +14,31 @@ namespace dae
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-			assert(false && "No Implemented Yet!");
+
+			// Vector from ray origin to center of sphere
+			Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
+
+
+			//Vector3 a{ Vector3::Dot(ray.direction, ray.direction) };
+			float dp{ Vector3::Dot(tc, ray.direction)};  // Vector TP  (P is perpendicular to the raycast, and goes to C)
+			float tcl{ tc.Magnitude() };
+			float odSqr{ Square(tcl) - Square(dp) };  // Power of length between P & C
+			float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
+			float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
+
+			Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
+			
+			if (odSqr < Square(sphere.radius))
+			{
+				//std::cout << odSqr << "\n";
+				//std::cout << "(" << pointI1.x << ", " << pointI1.y << ", " << pointI1.z << ")\n";
+				hitRecord.materialIndex = sphere.materialIndex;
+				hitRecord.didHit = true;
+				hitRecord.t = ti1;
+				hitRecord.origin = ray.origin;
+				hitRecord.normal = (sphere.origin - pointI1).Normalized();
+				return true;
+			}
 			return false;
 		}
 

@@ -32,6 +32,7 @@ void Renderer::Render(Scene* pScene) const
 
 	float aspectRatio{ float(m_Width) / float(m_Height)};
 
+
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
@@ -44,14 +45,27 @@ void Renderer::Render(Scene* pScene) const
 			float cy{ 1.0f - ((2.0f * (py + 0.5f)) / float(m_Height)) };
 
 			Vector3 rayDirection{};
-			rayDirection += cx * camera.right + cy * camera.up + 1.0f * camera.forward;
-			rayDirection = rayDirection.Normalized();
+			rayDirection = cx * camera.right + cy * camera.up + 1.0f * camera.forward;
+			rayDirection.Normalize();
 			
 			Ray hitRay{ camera.origin,  rayDirection };
 
 
+			ColorRGB finalColor{};
 
-			ColorRGB finalColor{ rayDirection.x, rayDirection.y, rayDirection.z};
+
+			HitRecord closestHit{};
+			Sphere testSphere{ Vector3{ 0.0f, 0.0f, 100.0f }, 50.0f, 0 };
+
+			GeometryUtils::HitTest_Sphere(testSphere, hitRay, closestHit);
+			if (closestHit.didHit)
+			{
+
+				const float scaledT{ (closestHit.t - 50.0f) / 40.0f};
+				finalColor = {scaledT, scaledT, scaledT};
+				//finalColor = materials[closestHit.materialIndex]->Shade();
+			}
+
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
