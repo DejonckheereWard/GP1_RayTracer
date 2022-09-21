@@ -63,9 +63,14 @@ void Renderer::Render(Scene* pScene) const
 			if (closestHit.didHit)
 			{
 
-				//const float scaledT{ (closestHit.t - 50.0f) / 40.0f};
+				const float scaledT{1.0f - (closestHit.t / 200.0f) - 0.05f};
 				//finalColor = {scaledT, scaledT, scaledT};
-				finalColor = materials[closestHit.materialIndex]->Shade();
+				Vector3 lightDirection{ -1, -1, 1 };
+				lightDirection.Normalize();
+				finalColor = materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, camera.forward);
+				finalColor.r *= scaledT;
+				finalColor.g *= scaledT;
+				finalColor.b *= scaledT;
 			}
 
 

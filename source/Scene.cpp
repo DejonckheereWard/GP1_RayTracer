@@ -29,7 +29,20 @@ namespace dae {
 	void dae::Scene::GetClosestHit(const Ray& ray, HitRecord& closestHit) const
 	{
 		//todo W1
+		
+		// Check the planes
+		const size_t planeGeometriesSize{ m_PlaneGeometries.size() };
+		for (size_t i{}; i < planeGeometriesSize; ++i)
+		{
+			HitRecord hitInfo{};
+			GeometryUtils::HitTest_Plane(m_PlaneGeometries[i], ray, hitInfo);
+			if (hitInfo.t < closestHit.t)
+			{
+				closestHit = hitInfo;
+			}
+		}
 
+		// Check the spheres
 		const size_t sphereGeometriesSize{ m_SphereGeometries.size()};
 		for (size_t i{}; i < sphereGeometriesSize; ++i)
 		{
@@ -41,16 +54,9 @@ namespace dae {
 			}
 		}
 
-		const size_t planeGeometriesSize{ m_PlaneGeometries.size()};
-		for (size_t i{}; i < planeGeometriesSize; ++i)
-		{
-			HitRecord hitInfo{};
-			GeometryUtils::HitTest_Plane(m_PlaneGeometries[i], ray, hitInfo);
-			if (hitInfo.t < closestHit.t)
-			{
-				closestHit = hitInfo;
-			}
-		}
+		// Future checks (triangles, ...)
+
+		
 
 
 	}
