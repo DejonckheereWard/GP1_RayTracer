@@ -55,15 +55,12 @@ void Renderer::Render(Scene* pScene) const
 
 
 			HitRecord closestHit{};
-			pScene->GetClosestHit(hitRay, closestHit);
+			pScene->GetClosestHit(hitRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
 
-			//Sphere testSphere{ Vector3{ 0.0f, 0.0f, 100.0f }, 50.0f, 0 };
-
-			//GeometryUtils::HitTest_Sphere(testSphere, hitRay, closestHit);
 			if (closestHit.didHit)
 			{
 
-				const float scaledT{1.0f - (closestHit.t / 200.0f) - 0.05f};
+				const float scaledT{40.0f / closestHit.t};
 				//finalColor = {scaledT, scaledT, scaledT};
 				Vector3 lightDirection{ -1, -1, 1 };
 				lightDirection.Normalize();
