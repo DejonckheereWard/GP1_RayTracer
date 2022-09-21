@@ -28,15 +28,15 @@ namespace dae
 
 			Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
 			
-			if (odSqr < Square(sphere.radius))
+			if (ti1 >= ray.min && ti1 <= ray.max)
 			{
 				//std::cout << odSqr << "\n";
 				//std::cout << "(" << pointI1.x << ", " << pointI1.y << ", " << pointI1.z << ")\n";
-				hitRecord.materialIndex = sphere.materialIndex;
 				hitRecord.didHit = true;
-				hitRecord.t = ti1;
-				hitRecord.origin = ray.origin;
+				hitRecord.materialIndex = sphere.materialIndex;
 				hitRecord.normal = (sphere.origin - pointI1).Normalized();
+				hitRecord.origin = ray.origin;
+				hitRecord.t = ti1;
 				return true;
 			}
 			return false;
@@ -53,7 +53,26 @@ namespace dae
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W1
-			assert(false && "No Implemented Yet!");
+
+			// Check if ray hits the plane, and where the hit is.
+
+			// Calculate distance hitPoint
+			const float t{ Vector3::Dot((plane.origin - ray.origin), plane.normal) / Vector3::Dot(ray.direction, plane.normal)};
+
+			// Cehck if T exceeds the boundaries set in the ray struct (tMin & tMax)
+			if ((t >= ray.min && t <= ray.max))
+			{
+				// We can calculate where point P is, by multiplying the direction, with the distance (t) found earlier.
+				// Add that to the ray's origin to find P
+				const Vector3 p{ ray.origin + (t * ray.direction) };
+
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = plane.materialIndex;
+				hitRecord.normal = plane.normal;
+				hitRecord.origin = ray.origin;
+				hitRecord.t = t;
+
+			}
 			return false;
 		}
 

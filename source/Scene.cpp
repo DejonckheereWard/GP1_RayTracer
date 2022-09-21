@@ -31,10 +31,21 @@ namespace dae {
 		//todo W1
 
 		const size_t sphereGeometriesSize{ m_SphereGeometries.size()};
-		for (size_t i{}; i < sphereGeometriesSize; i++)
+		for (size_t i{}; i < sphereGeometriesSize; ++i)
 		{
 			HitRecord hitInfo{};
 			GeometryUtils::HitTest_Sphere(m_SphereGeometries[i], ray, hitInfo);
+			if (hitInfo.t < closestHit.t)
+			{
+				closestHit = hitInfo;
+			}
+		}
+
+		const size_t planeGeometriesSize{ m_PlaneGeometries.size()};
+		for (size_t i{}; i < planeGeometriesSize; ++i)
+		{
+			HitRecord hitInfo{};
+			GeometryUtils::HitTest_Plane(m_PlaneGeometries[i], ray, hitInfo);
 			if (hitInfo.t < closestHit.t)
 			{
 				closestHit = hitInfo;
