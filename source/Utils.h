@@ -128,7 +128,7 @@ namespace dae
 				return light.origin - origin;
 				break;
 			case dae::LightType::Directional:
-				return -light.direction;
+				return -light.direction * FLT_MAX;
 				break;
 			default:
 				break;
