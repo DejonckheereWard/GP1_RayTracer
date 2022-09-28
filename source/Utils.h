@@ -128,6 +128,8 @@ namespace dae
 				return light.origin - origin;
 				break;
 			case dae::LightType::Directional:
+				// Directional lights have no origin, so we just return the direction
+				// Magnitude of a directional light is max value we can give: FLT_MAX
 				return -light.direction * FLT_MAX;
 				break;
 			default:
