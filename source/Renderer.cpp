@@ -32,6 +32,8 @@ void Renderer::Render(Scene* pScene) const
 
 	float aspectRatio{ float(m_Width) / float(m_Height)};
 
+	const float fovAngleDeg{ 60.0f };
+	const float fovRatio{ tan(fovAngleDeg * TO_RADIANS / 2.0f) };
 
 	for (int px{}; px < m_Width; ++px)
 	{
@@ -41,33 +43,34 @@ void Renderer::Render(Scene* pScene) const
 			gradient += py / static_cast<float>(m_Width);
 			gradient /= 2.0f;
 
-			float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio };
-			float cy{ 1.0f - ((2.0f * (py + 0.5f)) / float(m_Height)) };
+			
+			float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fovRatio };
+			float cy{ 1.0f - ((2.0f * (py + 0.5f)) / float(m_Height) * fovRatio) };
 
 			Vector3 rayDirection{};
 			rayDirection = cx * camera.right + cy * camera.up + 1.0f * camera.forward;
 			rayDirection.Normalize();
 			
-			Ray hitRay{ camera.origin,  rayDirection };
+			Ray viewRay{ camera.origin,  rayDirection };
 
 
 			ColorRGB finalColor{};
 
 
 			HitRecord closestHit{};
-			pScene->GetClosestHit(hitRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
+			pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
 
 			if (closestHit.didHit)
 			{
 
-				const float scaledT{40.0f / closestHit.t};
+				//const float scaledT{40.0f / closestHit.t};
 				//finalColor = {scaledT, scaledT, scaledT};
 				Vector3 lightDirection{ -1, -1, 1 };
 				lightDirection.Normalize();
-				finalColor = materials[closestHit.materialIndex]->Shade(closestHit, lightDirection, camera.forward);
-				finalColor.r *= scaledT;
+				finalColor = materials[closestHit.materialIndex]->Shade();
+			/*	finalColor.r *= scaledT;
 				finalColor.g *= scaledT;
-				finalColor.b *= scaledT;
+				finalColor.b *= scaledT;*/
 			}
 
 
