@@ -33,7 +33,7 @@ void Renderer::Render(Scene* pScene) const
 	float aspectRatio{ float(m_Width) / float(m_Height)};
 
 	const float fovRatio{ tan(camera.fovAngle * TO_RADIANS / 2.0f) };
-	const float fovRatio{ tan(fovAngleDeg * TO_RADIANS / 2.0f) };
+	const Matrix cameraToWorld = camera.CalculateCameraToWorld();
 
 	for (int px{}; px < m_Width; ++px)
 	{
