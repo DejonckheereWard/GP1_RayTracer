@@ -21,6 +21,7 @@ namespace dae
 
 		Vector3 origin{};
 		float fovAngle{90.f};
+		const float speed{ 3.0f };
 
 		Vector3 forward{Vector3::UnitZ};
 		Vector3 up{Vector3::UnitY};
@@ -52,6 +53,22 @@ namespace dae
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
 
+			if (pKeyboardState[SDL_SCANCODE_W])
+			{
+				origin += forward * speed * deltaTime;
+			}
+			if (pKeyboardState[SDL_SCANCODE_S])
+			{
+				origin -= forward * speed * deltaTime;
+			}
+			if (pKeyboardState[SDL_SCANCODE_A])
+			{
+				origin -= right * speed * deltaTime;
+			}
+			if (pKeyboardState[SDL_SCANCODE_D])
+			{
+				origin += right * speed * deltaTime;
+			}
 
 			//Mouse Input
 			int mouseX{}, mouseY{};
