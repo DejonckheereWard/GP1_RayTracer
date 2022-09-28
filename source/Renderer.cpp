@@ -50,6 +50,9 @@ void Renderer::Render(Scene* pScene) const
 			Vector3 rayDirection{};
 			rayDirection = cx * camera.right + cy * camera.up + 1.0f * camera.forward;
 			rayDirection.Normalize();
+
+			rayDirection = cameraToWorld.TransformVector(rayDirection);
+			rayDirection.Normalize();
 			
 			Ray viewRay{ camera.origin,  rayDirection };
 
