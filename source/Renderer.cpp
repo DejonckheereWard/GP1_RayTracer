@@ -38,44 +38,22 @@ void Renderer::Render(Scene* pScene) const
 	for (int px{}; px < m_Width; ++px)
 	{
 		for (int py{}; py < m_Height; ++py)
-		{
-			float gradient = px / static_cast<float>(m_Width);
-			gradient += py / static_cast<float>(m_Width);
-			gradient /= 2.0f;
-
-			
+		{			
 			float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fovRatio };
 			float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fovRatio };
 
-			Vector3 rayDirection{};
-			rayDirection = cx * camera.right + cy * camera.up + 1.0f * camera.forward;
-			rayDirection.Normalize();
-
-			rayDirection = cameraToWorld.TransformVector(rayDirection);
-			rayDirection.Normalize();
-			
+			Vector3 rayDirection{ cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };			
 			Ray viewRay{ camera.origin,  rayDirection };
-
-
-			ColorRGB finalColor{};
-
-
+			
+			ColorRGB finalColor{};			
+			
 			HitRecord closestHit{};
 			pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
 
 			if (closestHit.didHit)
 			{
-
-				//const float scaledT{40.0f / closestHit.t};
-				//finalColor = {scaledT, scaledT, scaledT};
-				Vector3 lightDirection{ -1, -1, 1 };
-				lightDirection.Normalize();
 				finalColor = materials[closestHit.materialIndex]->Shade();
-			/*	finalColor.r *= scaledT;
-				finalColor.g *= scaledT;
-				finalColor.b *= scaledT;*/
 			}
-
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();
