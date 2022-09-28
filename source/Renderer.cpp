@@ -32,7 +32,7 @@ void Renderer::Render(Scene* pScene) const
 
 	float aspectRatio{ float(m_Width) / float(m_Height)};
 
-	const float fovAngleDeg{ 60.0f };
+	const float fovRatio{ tan(camera.fovAngle * TO_RADIANS / 2.0f) };
 	const float fovRatio{ tan(fovAngleDeg * TO_RADIANS / 2.0f) };
 
 	for (int px{}; px < m_Width; ++px)
@@ -45,7 +45,7 @@ void Renderer::Render(Scene* pScene) const
 
 			
 			float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fovRatio };
-			float cy{ 1.0f - ((2.0f * (py + 0.5f)) / float(m_Height) * fovRatio) };
+			float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fovRatio };
 
 			Vector3 rayDirection{};
 			rayDirection = cx * camera.right + cy * camera.up + 1.0f * camera.forward;
