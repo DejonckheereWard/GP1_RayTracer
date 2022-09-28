@@ -26,12 +26,12 @@ namespace dae
 			float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
 			float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
 
-			Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
 			
 			if (ti1 >= ray.min && ti1 <= ray.max)
 			{
-				//std::cout << odSqr << "\n";
-				//std::cout << "(" << pointI1.x << ", " << pointI1.y << ", " << pointI1.z << ")\n";
+				if (ignoreHitRecord) return true;
+				
+				Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = sphere.materialIndex;
 				hitRecord.normal = (sphere.origin - pointI1).Normalized();
@@ -64,13 +64,15 @@ namespace dae
 			{
 				// We can calculate where point P is, by multiplying the direction, with the distance (t) found earlier.
 				// Add that to the ray's origin to find P
+				if (ignoreHitRecord) return true;
+				
 				const Vector3 p{ ray.origin + (t * ray.direction) };
-
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = plane.materialIndex;
 				hitRecord.normal = plane.normal;
 				hitRecord.origin = ray.origin;
 				hitRecord.t = t;
+				return true;
 
 			}
 			return false;
