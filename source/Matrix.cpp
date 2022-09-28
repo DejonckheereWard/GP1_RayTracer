@@ -104,9 +104,12 @@ namespace dae {
 
 	Matrix Matrix::CreateTranslation(float x, float y, float z)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		return {
+			{1, 0, 0, x},
+			{0, 1, 0, y},
+			{0, 0, 1, z},
+			{0, 0, 0, 1}	
+		};
 	}
 
 	Matrix Matrix::CreateTranslation(const Vector3& t)
@@ -116,30 +119,43 @@ namespace dae {
 
 	Matrix Matrix::CreateRotationX(float pitch)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		// Input is in radians
+		// Returns Rotation Matrix that rotates around the X axis
+		return {
+			{ 1,           0,            0, 0 },
+			{ 0, cosf(pitch), -sinf(pitch), 0 },
+			{ 0, sinf(pitch),  cosf(pitch), 0 },
+			{ 0,           0,            0, 1 }
+		};
 	}
 
 	Matrix Matrix::CreateRotationY(float yaw)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		// Input is in radians
+		// Returns Rotation Matrix that rotates around the Y axis
+		return {
+			{ cosf(yaw),  0, -sinf(yaw), 0},
+			{ 0,          1,         0, 0},
+			{ sinf(yaw), 0, cosf(yaw), 0},
+			{ 0,          0,         0, 1}
+		};
 	}
 
 	Matrix Matrix::CreateRotationZ(float roll)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		// Input is in radians
+		// Returns Rotation Matrix that rotates around the Z axis
+		return {
+			{ cosf(roll), sinf(roll),  0,  0 },
+			{ -sinf(roll),  cosf(roll),  0,  0 },
+			{          0,           0,  0,  0 },
+			{          0,           0,  0,  1 }
+		};
 	}
 
 	Matrix Matrix::CreateRotation(const Vector3& r)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		return CreateRotationX(r.x) * CreateRotationY(r.y) * CreateRotationZ(r.z);
 	}
 
 	Matrix Matrix::CreateRotation(float pitch, float yaw, float roll)
@@ -149,9 +165,12 @@ namespace dae {
 
 	Matrix Matrix::CreateScale(float sx, float sy, float sz)
 	{
-		//todo W1
-		assert(false && "Not Implemented Yet");
-		return {};
+		return {
+			{ sx,  0,  0,  0},
+			{  0, sy,  0,  0},
+			{  0,  0, sz,  0},
+			{  0,  0,  0,  1}
+		};
 	}
 
 	Matrix Matrix::CreateScale(const Vector3& s)
