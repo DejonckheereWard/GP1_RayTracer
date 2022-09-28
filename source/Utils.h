@@ -120,9 +120,19 @@ namespace dae
 		//Direction from target to light
 		inline Vector3 GetDirectionToLight(const Light& light, const Vector3 origin)
 		{
-			//todo W3
-			assert(false && "No Implemented Yet!");
-			return {};
+			// Returns unnormalized vector from the origin to the lights origin
+			// Implementation depends on the type of light
+			switch (light.type)
+			{
+			case dae::LightType::Point:
+				return light.origin - origin;
+				break;
+			case dae::LightType::Directional:
+				return -light.direction;
+				break;
+			default:
+				break;
+			}
 		}
 
 		inline ColorRGB GetRadiance(const Light& light, const Vector3& target)
