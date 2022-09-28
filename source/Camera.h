@@ -34,9 +34,15 @@ namespace dae
 
 		Matrix CalculateCameraToWorld()
 		{
-			//todo: W2
-			assert(false && "Not Implemented Yet");
-			return {};
+			right = Vector3::Cross(Vector3::UnitY, forward);
+			up = Vector3::Cross(forward, right);
+
+			return Matrix {
+				{right.x  , right.y   , right.z  , 0},
+				{up.x     , up.y      , up.z     , 0},
+				{forward.x, forward.y , forward.z, 0},
+				{origin.x , origin.y  , origin.z , 1}
+			};
 		}
 
 		void Update(Timer* pTimer)
