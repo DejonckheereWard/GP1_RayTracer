@@ -232,4 +232,45 @@ namespace dae {
 		AddPointLight({ 0.f, 5.f, -5.f }, 70.f, colors::White);
 	}
 #pragma endregion
+#pragma region SCENE W3
+	void Scene_W3::Initialize()
+	{
+		m_Camera.origin = { 0.0f, 3.0f, -9.0f };
+		m_Camera.fovAngle = 45.f;
+		
+		const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 1.f));
+		const auto matCt_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 0.6f));
+		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 0.1f));
+
+		const auto matCt_GrayRoughPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.750f, 0.75f }, 0.f, 1.f));
+		const auto matCt_GrayMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.750f, 0.75f }, 0.f, 0.6f));
+		const auto matCt_GraySmoothPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.750f, 0.75f }, 0.f, 0.1f));
+		
+		const auto matLamber_GrayBlue = AddMaterial(new Material_Lambert({ 0.49f, 0.57f, 0.57f }, 1.0f));
+
+		// Planes
+		AddPlane({ 0.0f, 0.0f, 10.0f }, { 0.0f, 0.0f, -1.0f }, matLamber_GrayBlue);  // BACK
+		AddPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, matLamber_GrayBlue);  // BOTTOM
+		AddPlane({ 0.0f, 10.0f, 0.0f }, { 0.0f, -1.0f, 0.0f }, matLamber_GrayBlue);  // TOP
+		AddPlane({ 5.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, matLamber_GrayBlue);  // RIGHT
+		AddPlane({ -5.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, matLamber_GrayBlue);  // RIGHT
+
+		AddPlane({ 0.0f, 0.0f, -10.0f }, { 0.0f, 0.0f, -.0f }, matLamber_GrayBlue);  // BEHIND
+
+		// Spheres
+		AddSphere({ -1.75f, 1.0f, 0.0f }, 0.75f, matCt_GrayRoughMetal);
+		AddSphere({ 0.0f, 1.0f, 0.0f }, 0.75f, matCt_GrayMediumMetal);
+		AddSphere({ 1.75f, 1.0f, 0.0f }, 0.75f, matCt_GraySmoothMetal);
+		
+		AddSphere({ -1.75f, 3.0f, 0.0f }, 0.75f, matCt_GrayRoughPlastic);
+		AddSphere({ 0.0f, 3.0f, 0.0f }, 0.75f, matCt_GrayMediumPlastic);
+		AddSphere({ 1.75f, 3.0f, 0.0f }, 0.75f, matCt_GraySmoothPlastic);
+		
+		// Lights
+		AddPointLight(Vector3{ 0.0f, 5.0f, 5.0f }, 50.0f, ColorRGB(1.0f, 0.61f, 0.45f));  // BACKLIGHT
+		AddPointLight(Vector3{ -2.5f, 5.0f, -5.0f }, 70.0f, ColorRGB{ 1.0f, 0.8f, 0.45f }); // FRONT LIGHT LEFT
+		AddPointLight(Vector3{ 2.5f, 2.5f, -5.0f }, 50.0f, ColorRGB{ 0.34f, 0.47f, 0.68f });
+		
+	}
+#pragma endregion
 }

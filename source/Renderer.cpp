@@ -13,7 +13,7 @@
 using namespace dae;
 
 
-Renderer::Renderer(SDL_Window * pWindow) :
+Renderer::Renderer(SDL_Window* pWindow) :
 	m_pWindow(pWindow),
 	m_pBuffer(SDL_GetWindowSurface(pWindow))
 {
@@ -30,7 +30,7 @@ void Renderer::Render(Scene* pScene) const
 	auto& lights = pScene->GetLights();
 
 
-	float aspectRatio{ float(m_Width) / float(m_Height)};
+	float aspectRatio{ float(m_Width) / float(m_Height) };
 
 	const float fovRatio{ tan(camera.fovAngle * TO_RADIANS / 2.0f) };
 	const Matrix cameraToWorld = camera.CalculateCameraToWorld();
