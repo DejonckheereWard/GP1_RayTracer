@@ -54,8 +54,6 @@ void Renderer::Render(Scene* pScene) const
 			{
 				finalColor = materials[closestHit.materialIndex]->Shade();
 
-				// Check if pixel is shadowed
-				float TotalObservedArea{ 0.0f };
 				for (const Light& light : lights)
 				{
 					// Calculate hit towards light ray
@@ -64,29 +62,27 @@ void Renderer::Render(Scene* pScene) const
 					const float lightDistance{ lightDirection.Normalize() };
 					Ray lightRay{ closestHit.origin + closestHit.normal * 0.0001f, lightDirection, 0.0f, lightDistance };
 
-					if (m_ShadowsEnabled && pScene->DoesHit(lightRay))
-					{
-						// Check if point can see the light
-						continue;
-					}
+					// Check if shadowed
+					if (m_ShadowsEnabled && pScene->DoesHit(lightRay)) continue;  // Skip if point can't see the light
 
 					// Calculate observed area (Lambert's cosine law)
 					float observedArea{ Vector3::Dot(closestHit.normal, lightDirection) };
-					if (observedArea < 0) continue;
-					TotalObservedArea += observedArea;
+					if ((observedArea < 0) && m_ShadowsEnabled) continue;  // Skip if observedarea is negative
 
 					switch (m_CurrentLightingMode)
 					{
 					case dae::Renderer::LightingMode::ObservedArea:
 					{
-						finalColor = ColorRGB(TotalObservedArea, TotalObservedArea, TotalObservedArea);
+						finalColor += ColorRGB(observedArea, observedArea, observedArea);
 						break;
 					}
 					case dae::Renderer::LightingMode::Radiance:
+						finalColor += LightUtils::GetRadiance(light, closestHit.origin);
 						break;
 					case dae::Renderer::LightingMode::BRDF:
 						break;
 					case dae::Renderer::LightingMode::Combined:
+						finalColor += LightUtils::GetRadiance(light, closestHit.origin) * observedArea;
 						break;
 					}
 
