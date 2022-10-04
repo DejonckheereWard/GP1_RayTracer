@@ -5,7 +5,8 @@
 #include "MathHelpers.h"
 #include <cmath>
 
-namespace dae {
+namespace dae
+{
 	Matrix::Matrix(const Vector3& xAxis, const Vector3& yAxis, const Vector3& zAxis, const Vector3& t) :
 		Matrix({ xAxis, 0 }, { yAxis, 0 }, { zAxis, 0 }, { t, 1 })
 	{
@@ -108,7 +109,7 @@ namespace dae {
 			{1, 0, 0, x},
 			{0, 1, 0, y},
 			{0, 0, 1, z},
-			{0, 0, 0, 1}	
+			{0, 0, 0, 1}
 		};
 	}
 
@@ -122,10 +123,10 @@ namespace dae {
 		// Input is in radians
 		// Returns Rotation Matrix that rotates around the X axis
 		return {
-			{ 1,           0,            0, 0 },
+			{ 1, 0          , 0           , 0 },
 			{ 0, cosf(pitch), -sinf(pitch), 0 },
 			{ 0, sinf(pitch),  cosf(pitch), 0 },
-			{ 0,           0,            0, 1 }
+			{ 0, 0          , 0           , 1 }
 		};
 	}
 
@@ -134,10 +135,10 @@ namespace dae {
 		// Input is in radians
 		// Returns Rotation Matrix that rotates around the Y axis
 		return {
-			{ cosf(yaw),  0, -sinf(yaw), 0},
-			{ 0,          1,         0, 0},
-			{ sinf(yaw), 0, cosf(yaw), 0},
-			{ 0,          0,         0, 1}
+			{ cosf(yaw), 0, -sinf(yaw), 0},
+			{ 0        , 1, 0         , 0},
+			{ sinf(yaw), 0, cosf(yaw) , 0},
+			{ 0        , 0, 0         , 1}
 		};
 	}
 
@@ -146,10 +147,10 @@ namespace dae {
 		// Input is in radians
 		// Returns Rotation Matrix that rotates around the Z axis
 		return {
-			{ cosf(roll), sinf(roll),  0,  0 },
-			{ -sinf(roll),  cosf(roll),  0,  0 },
-			{          0,           0,  0,  0 },
-			{          0,           0,  0,  1 }
+			{ cosf(roll) , sinf(roll), 0, 0 },
+			{ -sinf(roll), cosf(roll), 0, 0 },
+			{ 0          , 0         , 0, 0 },
+			{ 0          , 0         , 0, 1 }
 		};
 	}
 

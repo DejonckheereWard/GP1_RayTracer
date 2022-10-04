@@ -5,6 +5,7 @@
 
 #include "Math.h"
 #include "Timer.h"
+#include <iostream>
 
 namespace dae
 {
@@ -12,36 +13,37 @@ namespace dae
 	{
 		Camera() = default;
 
-		Camera(const Vector3& _origin, float _fovAngle):
-			origin{_origin},
-			fovAngle{_fovAngle}
+		Camera(const Vector3& _origin, float _fovAngle) :
+			origin{ _origin },
+			fovAngle{ _fovAngle }
 		{
 		}
 
 
 		Vector3 origin{};
-		float fovAngle{90.f};
-		const float speed{ 3.0f };
+		float fovAngle{ 90.f };
+		const float movementSpeed{ 3.0f };
+		const float rotationSpeed{ 3.0f };
 
-		Vector3 forward{Vector3::UnitZ};
-		Vector3 up{Vector3::UnitY};
-		Vector3 right{Vector3::UnitX};
+		Vector3 forward{ Vector3::UnitZ };
+		Vector3 up{ Vector3::UnitY };
+		Vector3 right{ Vector3::UnitX };
 
-		float totalPitch{0.f};
-		float totalYaw{0.f};
+		float totalPitch{ 0.f };
+		float totalYaw{ 0.f };
 
 		Matrix cameraToWorld{};
 
 
 		Matrix CalculateCameraToWorld()
 		{
-			const Vector3 cRight = Vector3::Cross(up, forward).Normalized();
-			const Vector3 cUp = Vector3::Cross(forward, right).Normalized();
-			
+			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
+			up = Vector3::Cross(forward, right).Normalized();
 
-			return Matrix {
-				{cRight.x , cRight.y  , cRight.z , 0},
-				{cUp.x    , cUp.y     , cUp.z    , 0},
+
+			return Matrix{
+				{right.x  , right.y   , right.z  , 0},
+				{up.x     , up.y      , up.z     , 0},
 				{forward.x, forward.y , forward.z, 0},
 				{origin.x , origin.y  , origin.z , 1}
 			};
@@ -57,19 +59,19 @@ namespace dae
 			// Keyboard movement of the camera
 			if (pKeyboardState[SDL_SCANCODE_W])
 			{
-				origin += forward * speed * deltaTime;
+				origin += forward * movementSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_S])
 			{
-				origin -= forward * speed * deltaTime;
+				origin -= forward * movementSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_A])
 			{
-				origin -= right * speed * deltaTime;
+				origin -= right * movementSpeed * deltaTime;
 			}
 			if (pKeyboardState[SDL_SCANCODE_D])
 			{
-				origin += right * speed * deltaTime;
+				origin += right * movementSpeed * deltaTime;
 			}
 
 			//Mouse Input
@@ -78,17 +80,17 @@ namespace dae
 
 			// Mouse movements / rotation of the camera
 			if ((mouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) && mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
-			{	
+			{
 				// mouseX yaw left & right, mouse Y moves forwards & backwards
-				const float upwards = -mouseY * 0.1f;
+				const float upwards = -mouseY * movementSpeed * deltaTime;
 
 				origin += up * upwards;
 			}
 			else if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))
 			{
 				// mouseX yaw left & right, mouse Y moves forwards & backwards
-				const float forwards = -mouseY * 0.1f;
-				const float yaw = mouseX * 0.1f;
+				const float forwards = -mouseY * deltaTime;
+				const float yaw = mouseX * deltaTime;
 
 				origin += forward * forwards;
 				totalYaw += yaw;
@@ -97,15 +99,12 @@ namespace dae
 				const Matrix finalRotation = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
 				forward = finalRotation.TransformVector(Vector3::UnitZ);
 				forward.Normalize();
-
-				
-				
 			}
 			else if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
 			{
 				// Look around the current origin
-				const float pitch = -mouseY * 0.1f;
-				const float yaw = mouseX * 0.1f;
+				const float pitch = -mouseY * rotationSpeed * deltaTime;
+				const float yaw = mouseX * rotationSpeed * deltaTime;
 
 				totalPitch += pitch;
 				totalYaw += yaw;
@@ -113,7 +112,7 @@ namespace dae
 				//Calculate the rotation matrix
 				const Matrix finalRotation = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
 				forward = finalRotation.TransformVector(Vector3::UnitZ);
-				forward.Normalize();				
+				forward.Normalize();
 			}
 		}
 	};

@@ -45,7 +45,7 @@ void Renderer::Render(Scene* pScene) const
 			Vector3 rayDirection{ cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };			
 			Ray viewRay{ camera.origin,  rayDirection };
 			
-			ColorRGB finalColor{};			
+			ColorRGB finalColor{};
 			
 			HitRecord closestHit{};
 			pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
@@ -53,7 +53,26 @@ void Renderer::Render(Scene* pScene) const
 			if (closestHit.didHit)
 			{
 				finalColor = materials[closestHit.materialIndex]->Shade();
+
+				// Check if pixel is shadowed
+				for (const Light& light : lights)
+				{
+					// Calculate hit towards light ray
+					// Use small offset for the ray origin (use normal direction)
+					Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin)};
+					const float lightDistance{ lightDirection.Normalize() };
+					
+					Ray shadowRay{ closestHit.origin + closestHit.normal * 0.0001f, lightDirection, 0.0f, lightDistance };
+					
+					if (pScene->DoesHit(shadowRay))
+					{
+						finalColor *= 0.5f;
+					}
+
+					
+				}
 			}
+
 
 			//Update Color in Buffer
 			finalColor.MaxToOne();

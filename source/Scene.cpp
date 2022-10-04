@@ -54,6 +54,9 @@ namespace dae {
 			}
 		}
 
+		// Check the lights
+		
+
 		// Future checks (triangles, ...)
 
 		
@@ -63,17 +66,16 @@ namespace dae {
 
 	bool Scene::DoesHit(const Ray& ray) const
 	{
-		// Plane checking is faster than spheres so we check planes first
+		for (const Sphere& sphere : m_SphereGeometries)
+		{
+			if (GeometryUtils::HitTest_Sphere(sphere, ray)) return true;
+		}
+
 		for (const Plane& plane : m_PlaneGeometries)
 		{
 			if (GeometryUtils::HitTest_Plane(plane, ray)) return true;
 		}
 
-		for (const Sphere& sphere : m_SphereGeometries)
-		{
-			if (GeometryUtils::HitTest_Sphere(sphere, ray)) return true;
-		}		
-		
 		return false;
 	}
 
@@ -152,6 +154,7 @@ namespace dae {
 		const unsigned char matId_Solid_Yellow = AddMaterial(new Material_SolidColor{ colors::Yellow });
 		const unsigned char matId_Solid_Green = AddMaterial(new Material_SolidColor{ colors::Green });
 		const unsigned char matId_Solid_Magenta = AddMaterial(new Material_SolidColor{ colors::Magenta });
+		
 
 		//Spheres
 		AddSphere({ -25.f, 0.f, 100.f }, 50.f, matId_Solid_Red);
@@ -166,6 +169,29 @@ namespace dae {
 	}
 #pragma endregion
 #pragma region SCENE W2
+	void Scene_W2::Update(dae::Timer* pTimer)
+	{
+		Scene::Update(pTimer);
+		++currentColorOffset;
+		Material_SolidColor* matChanging{ static_cast<Material_SolidColor*>( m_Materials[matId_Changing_Color]) };
+		
+		// Make every sphere shift through colors
+		const size_t sphereGeometriesSize{ m_SphereGeometries.size() };
+		for (size_t i{}; i < sphereGeometriesSize; ++i)
+		{
+			Sphere& sphere{ m_SphereGeometries[i] };
+			//sphere.materialIndex = static_cast<unsigned char>(i % m_Materials.size());
+			const float offSet{ abs(currentColorOffset % 255 + 1 - 128) / 255.0f };
+			const float colorRed{ 0.5f + offSet };
+			const float colorGreen{ 1.0f - offSet };
+			const float colorBlue{  0.0f };
+			
+			ColorRGB color{ colorRed,colorGreen,colorBlue };
+			matChanging->SetColor(color);
+
+		}
+		
+	}
 	void Scene_W2::Initialize()
 	{
 		m_Camera.origin = { 0.f, 3.f, -9.f };
@@ -177,6 +203,8 @@ namespace dae {
 		const unsigned char matId_Solid_Yellow = AddMaterial(new Material_SolidColor{ colors::Yellow });
 		const unsigned char matId_Solid_Green= AddMaterial(new Material_SolidColor{ colors::Green });
 		const unsigned char matId_Solid_Magenta = AddMaterial(new Material_SolidColor{ colors::Magenta });
+
+		matId_Changing_Color = AddMaterial(new Material_SolidColor{ colors::Cyan });
 		
 		// Planes
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matId_Solid_Green);
@@ -186,13 +214,20 @@ namespace dae {
 		AddPlane({ 0.f, 0.f, 10.f }, { 0.f, 0.f, -1.f }, matId_Solid_Magenta);
 		
 		// Spheres
-		AddSphere({ -1.75f, 1.f, 0.f }, .75f, matId_Solid_Red);
-		AddSphere({ 0.f, 1.f, 0.f }, .75f, matId_Solid_Blue);
-		AddSphere({ 1.75f, 1.f, 0.f }, .75f, matId_Solid_Red);
-		AddSphere({ -1.75f, 3.f, 0.f }, .75f, matId_Solid_Blue);
-		AddSphere({ 0.f, 3.f, 0.f }, .75f, matId_Solid_Red);
-		AddSphere({ 1.75f, 3.f, 0.f }, .75f, matId_Solid_Blue);
-
+		//AddSphere({ -1.75f, 1.f, 0.f }, .75f, matId_Solid_Red);
+		//AddSphere({ 0.f, 1.f, 0.f }, .75f, matId_Solid_Blue);
+		//AddSphere({ 1.75f, 1.f, 0.f }, .75f, matId_Solid_Red);
+		//AddSphere({ -1.75f, 3.f, 0.f }, .75f, matId_Solid_Blue);
+		//AddSphere({ 0.f, 3.f, 0.f }, .75f, matId_Solid_Red);
+		//AddSphere({ 1.75f, 3.f, 0.f }, .75f, matId_Solid_Blue);		
+		
+		AddSphere({ -1.75f, 1.f, 0.f }, .75f, matId_Changing_Color);
+		AddSphere({ 0.f, 1.f, 0.f }, .75f, matId_Changing_Color);
+		AddSphere({ 1.75f, 1.f, 0.f }, .75f, matId_Changing_Color);
+		AddSphere({ -1.75f, 3.f, 0.f }, .75f, matId_Changing_Color);
+		AddSphere({ 0.f, 3.f, 0.f }, .75f, matId_Changing_Color);
+		AddSphere({ 1.75f, 3.f, 0.f }, .75f, matId_Changing_Color);
+		
 		// Light
 		AddPointLight({ 0.f, 5.f, -5.f }, 70.f, colors::White);
 	}

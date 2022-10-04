@@ -13,33 +13,68 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
+			////todo W1
 
-			// Vector from ray origin to center of sphere
-			Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
+			////Vector from ray origin to center of sphere
+			//Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
 
 
-			//Vector3 a{ Vector3::Dot(ray.direction, ray.direction) };
-			float dp{ Vector3::Dot(tc, ray.direction)};  // Vector TP  (P is perpendicular to the raycast, and goes to C)
-			float tcl{ tc.Magnitude() };
-			float odSqr{ Square(tcl) - Square(dp) };  // Power of length between P & C
-			float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
-			float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
+			////Vector3 a{ Vector3::Dot(ray.direction, ray.direction) };
+			//float dp{ Vector3::Dot(tc, ray.direction)};  // Vector TP  (P is perpendicular to the raycast, and goes to C)
+			//float tclSqr{ tc.SqrMagnitude() };
+			//float odSqr{ tclSqr - Square(dp) };  // Power of length between P & C
+			//if (odSqr > Square(sphere.radius))
+			//{
+			//	// Optimization, if odSqr is larger than radius square, it's a miss.
+			//	return false;
+			//}
+			//float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
+			//float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
 
-			
-			if (ti1 >= ray.min && ti1 <= ray.max)
+			//
+			//if (ti1 >= ray.min && ti1 <= ray.max)
+			//{
+			//	if (ignoreHitRecord) return true;
+			//	
+			//	const Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
+			//	hitRecord.didHit = true;
+			//	hitRecord.materialIndex = sphere.materialIndex;
+			//	hitRecord.origin = pointI1;
+			//	hitRecord.normal = (pointI1 - sphere.origin).Normalized();
+			//	hitRecord.t = ti1;
+			//	return true;
+			//}
+			//return false;
+			Vector3 rayOriginToSphereOrigin{ sphere.origin - ray.origin };
+			float hypothenuseSquared{ rayOriginToSphereOrigin.SqrMagnitude() };
+			float side1{ Vector3::Dot(rayOriginToSphereOrigin, ray.direction) };
+
+			float distanceToRaySquared = hypothenuseSquared - side1 * side1;
+
+			//if the distance to the ray is larger than the radius there will be no results
+			//    also if equal because that is the exact border of the circle
+			if (distanceToRaySquared >= sphere.radius * sphere.radius)
+			{;
+				return false;
+			}
+
+			float distanceRaypointToIntersect = sqrt(sphere.radius * sphere.radius - distanceToRaySquared);
+			float t = side1 - distanceRaypointToIntersect;
+
+			if (t < ray.min || t > ray.max)
 			{
-				if (ignoreHitRecord) return true;
-				
-				Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
-				hitRecord.didHit = true;
-				hitRecord.materialIndex = sphere.materialIndex;
-				hitRecord.normal = (sphere.origin - pointI1).Normalized();
-				hitRecord.origin = ray.origin;
-				hitRecord.t = ti1;
+				return false;
+			}
+			if (ignoreHitRecord)
+			{
 				return true;
 			}
-			return false;
+			hitRecord.didHit = true;
+			hitRecord.materialIndex = sphere.materialIndex;
+			hitRecord.t = t;
+			hitRecord.origin = ray.origin + t * ray.direction;
+			hitRecord.normal = Vector3(sphere.origin, hitRecord.origin).Normalized();
+			return true;
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -57,20 +92,18 @@ namespace dae
 			// Check if ray hits the plane, and where the hit is.
 
 			// Calculate distance hitPoint
-			const float t{ Vector3::Dot((plane.origin - ray.origin), plane.normal) / Vector3::Dot(ray.direction, plane.normal)};
+			const float t{ Vector3::Dot((plane.origin - ray.origin), plane.normal) / Vector3::Dot(ray.direction, plane.normal) };
 
 			// Cehck if T exceeds the boundaries set in the ray struct (tMin & tMax)
-			if ((t >= ray.min && t <= ray.max))
+			if ((t >= ray.min) && (t <= ray.max))
 			{
 				// We can calculate where point P is, by multiplying the direction, with the distance (t) found earlier.
 				// Add that to the ray's origin to find P
 				if (ignoreHitRecord) return true;
-				
-				const Vector3 p{ ray.origin + (t * ray.direction) };
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = plane.materialIndex;
 				hitRecord.normal = plane.normal;
-				hitRecord.origin = ray.origin;
+				hitRecord.origin = ray.origin + (t * ray.direction);
 				hitRecord.t = t;
 				return true;
 
@@ -133,6 +166,7 @@ namespace dae
 				return -light.direction * FLT_MAX;
 				break;
 			default:
+				return -light.direction * FLT_MAX;
 				break;
 			}
 		}
@@ -186,7 +220,7 @@ namespace dae
 				//read till end of line and ignore all remaining chars
 				file.ignore(1000, '\n');
 
-				if (file.eof()) 
+				if (file.eof())
 					break;
 			}
 
@@ -201,7 +235,7 @@ namespace dae
 				Vector3 edgeV0V2 = positions[i2] - positions[i0];
 				Vector3 normal = Vector3::Cross(edgeV0V1, edgeV0V2);
 
-				if(isnan(normal.x))
+				if (isnan(normal.x))
 				{
 					int k = 0;
 				}
