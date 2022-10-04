@@ -39,54 +39,61 @@ void Renderer::Render(Scene* pScene) const
 	{
 		for (int py{}; py < m_Height; ++py)
 		{
-			float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fovRatio };
-			float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fovRatio };
+			const float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fovRatio };
+			const float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fovRatio };
 
-			Vector3 rayDirection{ cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };
-			Ray viewRay{ camera.origin,  rayDirection };
-
-			ColorRGB finalColor{};
+			const Vector3 rayDirection{ cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };
+			const Ray viewRay{ camera.origin,  rayDirection };
 
 			HitRecord closestHit{};
 			pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
 
+			ColorRGB finalColor{};
 			if (closestHit.didHit)
 			{
-				finalColor = materials[closestHit.materialIndex]->Shade();
-
 				for (const Light& light : lights)
 				{
 					// Calculate hit towards light ray
 					// Use small offset for the ray origin (use normal direction)
-					Vector3 lightDirection{ LightUtils::GetDirectionToLight(light, closestHit.origin) };
-					const float lightDistance{ lightDirection.Normalize() };
-					Ray lightRay{ closestHit.origin + closestHit.normal * 0.0001f, lightDirection, 0.0f, lightDistance };
+					Vector3 directionToLight{ LightUtils::GetDirectionToLight(light, closestHit.origin) };
+					const float lightDistance{ directionToLight.Normalize() };
+					Ray lightRay{ closestHit.origin + closestHit.normal * 0.0001f, directionToLight, 0.0f, lightDistance };
 
-					// Check if shadowed
-					if (m_ShadowsEnabled && pScene->DoesHit(lightRay)) continue;  // Skip if point can't see the light
+					
 
 					// Calculate observed area (Lambert's cosine law)
-					float observedArea{ Vector3::Dot(closestHit.normal, lightDirection) };
+					const float observedArea{ Vector3::Dot(closestHit.normal, directionToLight) };
 					if ((observedArea < 0) && m_ShadowsEnabled) continue;  // Skip if observedarea is negative
+					
+					// Check if shadowed
+					if (m_ShadowsEnabled && pScene->DoesHit(lightRay)) continue;  // Skip if point can't see the light
+					
+					// Calculate radiance color (light intensity)
+					const ColorRGB radianceColor{ LightUtils::GetRadiance(light, closestHit.origin) };
+					const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, -directionToLight, rayDirection) };  // Shade takes direction from light so inverse
+
 
 					switch (m_CurrentLightingMode)
 					{
-					case dae::Renderer::LightingMode::ObservedArea:
-					{
-						finalColor += ColorRGB(observedArea, observedArea, observedArea);
-						break;
+						case dae::Renderer::LightingMode::ObservedArea:
+							finalColor += ColorRGB(observedArea, observedArea, observedArea);
+							break;
+						case dae::Renderer::LightingMode::Radiance:
+							finalColor += radianceColor;
+							break;
+						case dae::Renderer::LightingMode::BRDF:
+							finalColor += BRDF;
+							break;
+						case dae::Renderer::LightingMode::Combined:
+							finalColor += radianceColor * observedArea * BRDF;
+							break;
 					}
-					case dae::Renderer::LightingMode::Radiance:
-						finalColor += LightUtils::GetRadiance(light, closestHit.origin);
-						break;
-					case dae::Renderer::LightingMode::BRDF:
-						break;
-					case dae::Renderer::LightingMode::Combined:
-						finalColor += LightUtils::GetRadiance(light, closestHit.origin) * observedArea;
-						break;
-					}
-
+					finalColor.MaxToOne();
 				}
+			}
+			else
+			{
+				finalColor = colors::Black;
 			}
 
 

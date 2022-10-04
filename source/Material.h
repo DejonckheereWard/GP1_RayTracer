@@ -56,20 +56,18 @@ namespace dae
 #pragma region Material LAMBERT
 	//LAMBERT
 	//=======
-	class Material_Lambert final : public Material
+	class Material_Lambert: public Material
 	{
 	public:
 		Material_Lambert(const ColorRGB& diffuseColor, float diffuseReflectance) :
 			m_DiffuseColor(diffuseColor), m_DiffuseReflectance(diffuseReflectance){}
 
-		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
-		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+		virtual ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
+		{			
+			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor);
 		}
 
-	private:
+	protected:
 		ColorRGB m_DiffuseColor{colors::White};
 		float m_DiffuseReflectance{1.f}; //kd
 	};
@@ -82,21 +80,22 @@ namespace dae
 	{
 	public:
 		Material_LambertPhong(const ColorRGB& diffuseColor, float kd, float ks, float phongExponent):
-			m_DiffuseColor(diffuseColor), m_DiffuseReflectance(kd), m_SpecularReflectance(ks),
+			m_DiffuseColor(diffuseColor), 
+			m_DiffuseReflectance(kd),
+			m_SpecularReflectance(ks),
 			m_PhongExponent(phongExponent)
 		{
 		}
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
-		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+		{			
+			return BRDF::Lambert(m_DiffuseReflectance, m_DiffuseColor) 
+				+ BRDF::Phong(m_SpecularReflectance, m_PhongExponent, l, -v, hitRecord.normal);
 		}
-
+		
 	private:
-		ColorRGB m_DiffuseColor{colors::White};
-		float m_DiffuseReflectance{0.5f}; //kd
+		ColorRGB m_DiffuseColor{ colors::White };
+		float m_DiffuseReflectance{ 1.f }; //kd
 		float m_SpecularReflectance{0.5f}; //ks
 		float m_PhongExponent{1.f}; //Phong Exponent
 	};

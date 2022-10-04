@@ -22,8 +22,8 @@ namespace dae
 
 		Vector3 origin{};
 		float fovAngle{ 90.f };
-		const float movementSpeed{ 3.0f };
-		const float rotationSpeed{ 3.0f };
+		const float movementSpeed{ 5.0f };
+		const float rotationSpeed{ 5.0f };
 
 		Vector3 forward{ Vector3::UnitZ };
 		Vector3 up{ Vector3::UnitY };
@@ -65,14 +65,23 @@ namespace dae
 			{
 				origin -= forward * movementSpeed * deltaTime;
 			}
-			if (pKeyboardState[SDL_SCANCODE_A])
-			{
-				origin -= right * movementSpeed * deltaTime;
-			}
 			if (pKeyboardState[SDL_SCANCODE_D])
 			{
 				origin += right * movementSpeed * deltaTime;
 			}
+			if (pKeyboardState[SDL_SCANCODE_A])
+			{
+				origin -= right * movementSpeed * deltaTime;
+			}
+			if (pKeyboardState[SDL_SCANCODE_SPACE])
+			{
+				origin += up * movementSpeed * deltaTime;
+			}
+			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
+			{
+				origin -= up * movementSpeed * deltaTime;
+			}
+
 
 			//Mouse Input
 			int mouseX{}, mouseY{};
