@@ -91,7 +91,12 @@ namespace dae
 		Scene_W2& operator=(const Scene_W2&) = delete;
 		Scene_W2& operator=(Scene_W2&&) noexcept = delete;
 
+		virtual void Update(dae::Timer* pTimer) override;
+
 		void Initialize() override;
+	private:
+		unsigned char matId_Changing_Color{};
+		int currentColorOffset{ 0 };
 	};
 
 }

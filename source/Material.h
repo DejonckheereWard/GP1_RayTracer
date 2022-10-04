@@ -43,6 +43,11 @@ namespace dae
 			return m_Color;
 		}
 
+		void SetColor(const ColorRGB& color)
+		{
+			m_Color = color;
+		}
+
 	private:
 		ColorRGB m_Color{colors::White};
 	};
