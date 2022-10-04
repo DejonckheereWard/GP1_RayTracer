@@ -13,68 +13,36 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			////todo W1
+#pragma region Geometric
+			//Vector from ray origin to center of sphere
+			Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
 
-			////Vector from ray origin to center of sphere
-			//Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
-
-
-			////Vector3 a{ Vector3::Dot(ray.direction, ray.direction) };
-			//float dp{ Vector3::Dot(tc, ray.direction)};  // Vector TP  (P is perpendicular to the raycast, and goes to C)
-			//float tclSqr{ tc.SqrMagnitude() };
-			//float odSqr{ tclSqr - Square(dp) };  // Power of length between P & C
-			//if (odSqr > Square(sphere.radius))
-			//{
-			//	// Optimization, if odSqr is larger than radius square, it's a miss.
-			//	return false;
-			//}
-			//float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
-			//float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
-
-			//
-			//if (ti1 >= ray.min && ti1 <= ray.max)
-			//{
-			//	if (ignoreHitRecord) return true;
-			//	
-			//	const Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
-			//	hitRecord.didHit = true;
-			//	hitRecord.materialIndex = sphere.materialIndex;
-			//	hitRecord.origin = pointI1;
-			//	hitRecord.normal = (pointI1 - sphere.origin).Normalized();
-			//	hitRecord.t = ti1;
-			//	return true;
-			//}
-			//return false;
-			Vector3 rayOriginToSphereOrigin{ sphere.origin - ray.origin };
-			float hypothenuseSquared{ rayOriginToSphereOrigin.SqrMagnitude() };
-			float side1{ Vector3::Dot(rayOriginToSphereOrigin, ray.direction) };
-
-			float distanceToRaySquared = hypothenuseSquared - side1 * side1;
-
-			//if the distance to the ray is larger than the radius there will be no results
-			//    also if equal because that is the exact border of the circle
-			if (distanceToRaySquared >= sphere.radius * sphere.radius)
-			{;
+			//Vector3 a{ Vector3::Dot(ray.direction, ray.direction) };
+			float dp{ Vector3::Dot(tc, ray.direction)};  // Vector TP  (P is perpendicular to the raycast, and goes to C)
+			float odSqr{ tc.SqrMagnitude() - Square(dp) };  // Power of length between P & C
+			if (odSqr > Square(sphere.radius))
+			{
+				// Optimization, if odSqr is larger than radius square, it's a miss.
 				return false;
 			}
+			float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
+			float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
 
-			float distanceRaypointToIntersect = sqrt(sphere.radius * sphere.radius - distanceToRaySquared);
-			float t = side1 - distanceRaypointToIntersect;
-
-			if (t < ray.min || t > ray.max)
+			
+			if (ti1 >= ray.min && ti1 <= ray.max)
 			{
-				return false;
-			}
-			if (ignoreHitRecord)
-			{
+				if (ignoreHitRecord) return true;
+				
+				const Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = sphere.materialIndex;
+				hitRecord.origin = pointI1;
+				hitRecord.normal = (pointI1 - sphere.origin).Normalized();
+				hitRecord.t = ti1;
 				return true;
 			}
-			hitRecord.didHit = true;
-			hitRecord.materialIndex = sphere.materialIndex;
-			hitRecord.t = t;
-			hitRecord.origin = ray.origin + t * ray.direction;
-			hitRecord.normal = Vector3(sphere.origin, hitRecord.origin).Normalized();
-			return true;
+			return false;
+#pragma endregion
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
