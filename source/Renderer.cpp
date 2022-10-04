@@ -93,6 +93,29 @@ bool Renderer::SaveBufferToImage() const
 	return SDL_SaveBMP(m_pBuffer, "RayTracing_Buffer.bmp");
 }
 
+void dae::Renderer::CycleLightingMode()
+{
+	switch (m_CurrentLightingMode)
+	{
+	case dae::Renderer::LightingMode::ObservedArea:
+		m_CurrentLightingMode = LightingMode::Radiance;
+		std::cout << "LightingMode: Radiance\n";
+		break;
+	case dae::Renderer::LightingMode::Radiance:
+		m_CurrentLightingMode = LightingMode::BRDF;
+		std::cout << "LightingMode: BRDF\n";
+		break;
+	case dae::Renderer::LightingMode::BRDF:
+		m_CurrentLightingMode = LightingMode::Combined;
+		std::cout << "LightingMode: Combined\n";
+		break;
+	case dae::Renderer::LightingMode::Combined:
+		m_CurrentLightingMode = LightingMode::ObservedArea;
+		std::cout << "LightingMode: ObservedArea\n";
+		break;
+	}
+}
+
 int Renderer::RunTests()
 {
 	// Test dot & cross product for vector3 & vector4
