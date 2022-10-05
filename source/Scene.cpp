@@ -258,7 +258,7 @@ namespace dae
 
 		AddPlane({ 0.0f, 0.0f, -10.0f }, { 0.0f, 0.0f, -.0f }, matLamber_GrayBlue);  // BEHIND
 
-		// TEMP Lambert-Phone spheres & materials
+		//// TEMP Lambert-Phone spheres & materials
 		//const auto matLambertPhong1 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 3.0f));
 		//const auto matLambertPhong2 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 15.0f));
 		//const auto matLambertPhong3 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 50.0f));
@@ -279,7 +279,7 @@ namespace dae
 		// Lights
 		AddPointLight(Vector3{ 0.0f, 5.0f, 5.0f }, 50.0f, ColorRGB(1.0f, 0.61f, 0.45f));  // BACKLIGHT
 		AddPointLight(Vector3{ -2.5f, 5.0f, -5.0f }, 70.0f, ColorRGB{ 1.0f, 0.8f, 0.45f }); // FRONT LIGHT LEFT
-		AddPointLight(Vector3{ 2.5f, 2.5f, -5.0f }, 50.0f, ColorRGB{ 0.34f, 0.47f, 0.68f });
+		AddPointLight(Vector3{ 2.5f, 2.5f, -5.0f }, 50.0f, ColorRGB{ 0.34f, 0.47f, 0.68f }); // FRONT LIGHT RIGHT
 
 	}
 #pragma endregion

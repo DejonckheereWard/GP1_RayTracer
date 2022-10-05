@@ -13,12 +13,12 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
-			return {kd * cd};
+			return { kd * cd / float(M_PI)};
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
-			return {kd * cd};
+			return { kd * cd / float(M_PI)};
 		}
 
 		/**
@@ -32,7 +32,7 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			Vector3 reflect{ l - (2 * Vector3::Dot(n, l) * n)};
+			Vector3 reflect{ l - (2 * Vector3::Dot(n, l) * n) };
 			const float RdotV{ std::max(0.0f, Vector3::Dot(reflect, v)) };
 			const float specularReflection{ ks * powf(RdotV, exp) };
 			return { specularReflection, specularReflection, specularReflection };
@@ -47,9 +47,7 @@ namespace dae
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+			return f0 + (ColorRGB(1, 1, 1) - f0) * powf(1.0f - Vector3::Dot(h, v), 5);
 		}
 
 		/**
@@ -61,9 +59,10 @@ namespace dae
 		 */
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+			const float a{ Square(roughness) };
+			const float nDotH{ Vector3::Dot(n, h) };
+			const float denom{ Square(nDotH) * (Square(a) - 1.0f) + 1.0f};
+			return Square(a) / (float(M_PI) * Square(denom));
 		}
 
 
@@ -76,9 +75,9 @@ namespace dae
 		 */
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+			const float nDotV{ Vector3::Dot(n, v) };
+			const float kDirect{ Square(Square(roughness) + 1.0f) / 8.0f };
+			return nDotV / (nDotV * (1.0f - kDirect) + kDirect);
 		}
 
 		/**
@@ -91,9 +90,8 @@ namespace dae
 		 */
 		static float GeometryFunction_Smith(const Vector3& n, const Vector3& v, const Vector3& l, float roughness)
 		{
-			//todo: W3
-			//assert(false && "Not Implemented Yet");
-			return {};
+			// Smith combines the SchlickGGX of the viewray with the lightray
+			return GeometryFunction_SchlickGGX(n, v, roughness) * GeometryFunction_SchlickGGX(n, l, roughness);
 		}
 
 	}

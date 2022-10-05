@@ -149,10 +149,9 @@ namespace dae
 				// Calculate the Radiant Power/Flux, Since it's a point light, we multiply the intensity with 4PI sterradians
 				// 4pi steradians is the area of a whole 3d unit sphere  (since point lights emit in every direction)
 				// We can cancel out the surface area to get the irradiance
-				const float surfaceArea{ 4.0f * float(M_PI)};
-				const float radiantPower{ light.intensity /** surfaceArea*/ };  // also called Radiant Flux
-				const float sphereRadiusSquared( (target - light.origin).SqrMagnitude() );  // Radius is the distance from the light to the target
-				const float irradiance{ radiantPower / (/*surfaceArea **/ sphereRadiusSquared)};
+				const float radiantPower{ light.intensity };  // also called Radiant Flux
+				const float sphereRadiusSquared( (light.origin - target).SqrMagnitude());  // Radius is the distance from the light to the target
+				const float irradiance{ radiantPower / sphereRadiusSquared};
 
 				return light.color * irradiance;  // Irradiancecolor
 				break;
@@ -161,12 +160,7 @@ namespace dae
 				// Directional lights are a bit simpler, they don't have any fallof or attenuation nor area, so we just return the intensity with the lightcolor
 				return light.color * light.intensity;
 				break;
-			default:
-				break;
-			}
-			
-
-			return {};
+			}			
 		}
 	}
 

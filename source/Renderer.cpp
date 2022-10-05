@@ -63,10 +63,13 @@ void Renderer::Render(Scene* pScene) const
 
 					// Calculate observed area (Lambert's cosine law)
 					const float observedArea{ Vector3::Dot(closestHit.normal, directionToLight) };
-					if ((observedArea < 0) && m_ShadowsEnabled) continue;  // Skip if observedarea is negative
+					if ((observedArea < 0)) continue;  // Skip if observedarea is negative
 					
 					// Check if shadowed
-					if (m_ShadowsEnabled && pScene->DoesHit(lightRay)) continue;  // Skip if point can't see the light
+					if (m_ShadowsEnabled && pScene->DoesHit(lightRay))
+					{
+						continue;
+					};  // Skip if point can't see the light
 					
 					// Calculate radiance color (light intensity)
 					const ColorRGB radianceColor{ LightUtils::GetRadiance(light, closestHit.origin) };
