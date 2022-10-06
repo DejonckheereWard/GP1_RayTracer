@@ -37,7 +37,7 @@ namespace dae
 		{
 			HitRecord hitInfo{};
 			GeometryUtils::HitTest_Plane(m_PlaneGeometries[i], ray, hitInfo);
-			if (hitInfo.t < closestHit.t)
+			if (hitInfo.t > 0.0f && hitInfo.t < closestHit.t)
 			{
 				closestHit = hitInfo;
 			}
@@ -49,7 +49,7 @@ namespace dae
 		{
 			HitRecord hitInfo{};
 			GeometryUtils::HitTest_Sphere(m_SphereGeometries[i], ray, hitInfo);
-			if (hitInfo.t < closestHit.t)
+			if (hitInfo.t > 0.0f && hitInfo.t < closestHit.t)
 			{
 				closestHit = hitInfo;
 			}
@@ -254,9 +254,9 @@ namespace dae
 		AddPlane({ 0.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, matLamber_GrayBlue);  // BOTTOM
 		AddPlane({ 0.0f, 10.0f, 0.0f }, { 0.0f, -1.0f, 0.0f }, matLamber_GrayBlue);  // TOP
 		AddPlane({ 5.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, matLamber_GrayBlue);  // RIGHT
-		AddPlane({ -5.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, matLamber_GrayBlue);  // RIGHT
+		AddPlane({ -5.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, matLamber_GrayBlue);  // LEFT
 
-		AddPlane({ 0.0f, 0.0f, -10.0f }, { 0.0f, 0.0f, -.0f }, matLamber_GrayBlue);  // BEHIND
+		AddPlane({ 0.0f, 0.0f, -10.0f }, { 0.0f, 0.0f, 1.0f }, matLamber_GrayBlue);  // BEHIND
 
 		//// TEMP Lambert-Phone spheres & materials
 		//const auto matLambertPhong1 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 3.0f));
@@ -291,14 +291,17 @@ namespace dae
 		const auto matLambert_Red = AddMaterial(new Material_Lambert(colors::Red, 1.f));
 		const auto matLambert_Blue = AddMaterial(new Material_LambertPhong(colors::Blue, 1.f, 1.f, 60.0f));
 		const auto matLambert_Yellow = AddMaterial(new Material_Lambert(colors::Yellow, 1.f));
+		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 0.1f));
 
 		AddSphere({ -.75f, 1.f, .0f }, 1.0f, matLambert_Red);
 		AddSphere({ .75f, 1.f, .0f }, 1.0f, matLambert_Blue);
+		AddSphere({ 2.25f, 1.f, .0f }, 1.0f, matCt_GraySmoothMetal);
 
 		AddPlane({ 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }, matLambert_Yellow);
 
 		AddPointLight({ 0.f, 5.f, 5.f }, 25.f, colors::White);
 
 		AddPointLight({ 0.f, 2.5f, -5.f }, 25.f, colors::White);
+		//AddDirectionalLight(Vector3{ 0.5f, 0.5f, 0.5f }.Normalized(), 25.0f, colors::White);
 	}
 }

@@ -113,8 +113,7 @@ namespace dae
 
 		ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) override
 		{
-			// Calculate Specular (CookTorrance BRDF)
-			
+			// Calculate Specular (CookTorrance BRDF)			
 			const ColorRGB baseReflectivity{ m_Metalness == 0 ? ColorRGB(0.04f, 0.04f, 0.04f) : m_Albedo};  // f0 (used for fresnel)
 			
 			const Vector3 halfVector{ (v + l).Normalized() };
@@ -129,7 +128,7 @@ namespace dae
 			ColorRGB kd{ ColorRGB(1,1,1) - fresnel};
 			if (m_Metalness > 0.0f) kd = ColorRGB(0, 0, 0);
 			const ColorRGB diffuseColor{ BRDF::Lambert(kd, m_Albedo)};
-			//return ColorRGB(colors::White) - fresnel;
+
 			return specularColor + diffuseColor;
 		}
 

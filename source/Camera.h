@@ -40,7 +40,6 @@ namespace dae
 			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			up = Vector3::Cross(forward, right).Normalized();
 
-
 			return Matrix{
 				{right.x  , right.y   , right.z  , 0},
 				{up.x     , up.y      , up.z     , 0},

@@ -13,12 +13,12 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
-			return { kd * cd / float(M_PI)};
+			return { kd * cd / PI };
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
-			return { kd * cd / float(M_PI)};
+			return { kd * cd / PI };
 		}
 
 		/**
