@@ -88,7 +88,7 @@ void Renderer::Render(Scene* pScene) const
 								finalColor += BRDF;
 								break;
 							case dae::Renderer::LightingMode::Combined:
-								finalColor += radianceColor * observedArea * BRDF * multiplier;
+								finalColor += radianceColor * observedArea * BRDF;
 								break;
 						}						
 					}
@@ -100,8 +100,8 @@ void Renderer::Render(Scene* pScene) const
 				}
 				else
 				{
-					ColorRGB skyColor{ colors::Black };
-					finalColor += skyColor * (multiplier / Square(closestHit.t));
+					ColorRGB skyColor{ colors::White };
+					finalColor += skyColor;
 				}
 			}
 

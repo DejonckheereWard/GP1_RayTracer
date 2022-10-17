@@ -42,7 +42,7 @@ namespace dae
 		 * \brief BRDF Fresnel Function >> Schlick
 		 * \param h Normalized Halfvector between View and Light directions
 		 * \param v Normalized View direction
-		 * \param f0 Base reflectivity of a surface based on IOR (Indices Of Refrection), this is different for Dielectrics (Non-Metal) and Conductors (Metal)
+		 * \param f0 Base reflectiviity of a surface based on IOR (Indices Of Refrection), this is different for Dielectrics (Non-Metal) and Conductors (Metal)
 		 * \return
 		 */
 		static ColorRGB FresnelFunction_Schlick(const Vector3& h, const Vector3& v, const ColorRGB& f0)

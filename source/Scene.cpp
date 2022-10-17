@@ -43,6 +43,19 @@ namespace dae
 			}
 		}
 
+
+		// Triangles
+		const size_t triangleMeshGeometriesSize{ m_TriangleMeshGeometries.size() };
+		for (size_t i{}; i < triangleMeshGeometriesSize; ++i)
+		{
+			HitRecord hitInfo{};
+			GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[i], ray, hitInfo);
+			if (hitInfo.t > 0.0f && hitInfo.t < closestHit.t)
+			{
+				closestHit = hitInfo;
+			}
+		}
+
 		// Check the spheres
 		const size_t sphereGeometriesSize{ m_SphereGeometries.size() };
 		for (size_t i{}; i < sphereGeometriesSize; ++i)
@@ -67,14 +80,19 @@ namespace dae
 
 	bool Scene::DoesHit(const Ray& ray) const
 	{
-		for (const Sphere& sphere : m_SphereGeometries)
-		{
-			if (GeometryUtils::HitTest_Sphere(sphere, ray)) return true;
-		}
-
 		for (const Plane& plane : m_PlaneGeometries)
 		{
 			if (GeometryUtils::HitTest_Plane(plane, ray)) return true;
+		}
+
+		for (const TriangleMesh& triangleMesh : m_TriangleMeshGeometries)
+		{
+			if (GeometryUtils::HitTest_TriangleMesh(triangleMesh, ray)) return true;
+		}
+		
+		for (const Sphere& sphere : m_SphereGeometries)
+		{
+			if (GeometryUtils::HitTest_Sphere(sphere, ray)) return true;
 		}
 
 		return false;
@@ -239,13 +257,13 @@ namespace dae
 		m_Camera.origin = { 0.0f, 3.0f, -9.0f };
 		m_Camera.fovAngle = 45.f;
 
-		const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 1.f));
-		const auto matCt_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 0.6f));
-		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 0.1f));
+		const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 1.f));
+		const auto matCt_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.6f));
+		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.1f));
 
-		const auto matCt_GrayRoughPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.750f, 0.75f }, 0.f, 1.f));
-		const auto matCt_GrayMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.750f, 0.75f }, 0.f, 0.6f));
-		const auto matCt_GraySmoothPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.750f, 0.75f }, 0.f, 0.1f));
+		const auto matCt_GrayRoughPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 1.f));
+		const auto matCt_GrayMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 0.6f));
+		const auto matCt_GraySmoothPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 0.1f));
 
 		const auto matLamber_GrayBlue = AddMaterial(new Material_Lambert({ 0.49f, 0.57f, 0.57f }, 1.0f));
 
@@ -256,18 +274,18 @@ namespace dae
 		AddPlane({ 5.0f, 0.0f, 0.0f }, { -1.0f, 0.0f, 0.0f }, matLamber_GrayBlue);  // RIGHT
 		AddPlane({ -5.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, matLamber_GrayBlue);  // LEFT
 
-		AddPlane({ 0.0f, 0.0f, -10.0f }, { 0.0f, 0.0f, 1.0f }, matLamber_GrayBlue);  // BEHIND
+		AddPlane({ 0.0f, 0.0f, -100.0f }, { 0.0f, 0.0f, 1.0f }, matLamber_GrayBlue);  // BEHIND
 
 		//// TEMP Lambert-Phone spheres & materials
-		//const auto matLambertPhong1 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 3.0f));
-		//const auto matLambertPhong2 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 15.0f));
-		//const auto matLambertPhong3 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 50.0f));
+		const auto matLambertPhong1 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 3.0f));
+		const auto matLambertPhong2 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 15.0f));
+		const auto matLambertPhong3 = AddMaterial(new Material_LambertPhong(colors::Blue, 0.5f, 0.5f, 50.0f));
 
 		//AddSphere(Vector3(-1.75f, 1.0f, 0.f), 0.75f, matLambertPhong1);
 		//AddSphere(Vector3(0.0f, 1.0f, 0.f), 0.75f, matLambertPhong2);
 		//AddSphere(Vector3(1.75f, 1.0f, 0.f), 0.75f, matLambertPhong3);
 
-		// Spheres
+		//// Spheres
 		AddSphere({ -1.75f, 1.0f, 0.0f }, 0.75f, matCt_GrayRoughMetal);
 		AddSphere({ 0.0f, 1.0f, 0.0f }, 0.75f, matCt_GrayMediumMetal);
 		AddSphere({ 1.75f, 1.0f, 0.0f }, 0.75f, matCt_GraySmoothMetal);
@@ -292,6 +310,15 @@ namespace dae
 		const auto matLambert_Blue = AddMaterial(new Material_LambertPhong(colors::Blue, 1.f, 1.f, 60.0f));
 		const auto matLambert_Yellow = AddMaterial(new Material_Lambert(colors::Yellow, 1.f));
 		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.960f, 0.915f }, 1.f, 0.1f));
+
+		// Triangles
+		TriangleCullMode cullMode(TriangleCullMode::NoCulling);
+
+		TriangleMesh* pTriangle{ AddTriangleMesh(cullMode, matLambert_Blue) };
+		pTriangle->AppendTriangle({
+			{ -5.0f, 0.0f, 10.0f },
+			{ 0.0f, 10.0f, 10.0f },
+			{ 5.0f, 0.0f, 10.0f }}, true);
 
 		AddSphere({ -.75f, 1.f, .0f }, 1.0f, matLambert_Red);
 		AddSphere({ .75f, 1.f, .0f }, 1.0f, matLambert_Blue);

@@ -104,9 +104,10 @@ namespace dae
 
 		const ColorRGB& operator*(float s)
 		{
+			//return { r * s, g * s, b * s };
 			return *this *= s;
 		}
-
+		
 		ColorRGB operator*(float s) const
 		{
 			return { r * s, g * s,b * s };
@@ -123,6 +124,7 @@ namespace dae
 
 		const ColorRGB& operator/(float s)
 		{
+			//return { r / s, g / s, b / s };
 			return *this /= s;
 		}
 		#pragma endregion

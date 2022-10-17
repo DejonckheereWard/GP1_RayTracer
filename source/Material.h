@@ -116,19 +116,18 @@ namespace dae
 			// Calculate Specular (CookTorrance BRDF)			
 			const ColorRGB baseReflectivity{ m_Metalness == 0 ? ColorRGB(0.04f, 0.04f, 0.04f) : m_Albedo};  // f0 (used for fresnel)
 			
-			const Vector3 halfVector{ (v + l).Normalized() };
+			const Vector3 halfVector{ (v + l).Normalized()};
 			const ColorRGB fresnel{ BRDF::FresnelFunction_Schlick(halfVector, v, baseReflectivity) };  // F
 			const float normalDistribution{ BRDF::NormalDistribution_GGX(hitRecord.normal, halfVector, m_Roughness) };  // D
 			const float GeoSmith{ BRDF::GeometryFunction_Smith(-hitRecord.normal, v, l, m_Roughness) };  // G
 			
 			const ColorRGB specularColor{ (fresnel * normalDistribution * GeoSmith) * (1.0f / (4.0f * Vector3::Dot(v, hitRecord.normal) * Vector3::Dot(l, hitRecord.normal)))};
-
-
+			
+			
 			// Calculate Diffuse (Lambert BRDF)
 			ColorRGB kd{ ColorRGB(1,1,1) - fresnel};
 			if (m_Metalness > 0.0f) kd = ColorRGB(0, 0, 0);
 			const ColorRGB diffuseColor{ BRDF::Lambert(kd, m_Albedo)};
-
 			return specularColor + diffuseColor;
 		}
 

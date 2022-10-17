@@ -90,7 +90,39 @@ namespace dae
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			assert(false && "No Implemented Yet!");
+			//assert(false && "No Implemented Yet!");
+
+			// Möller–Trumbore intersection algorithm
+
+			const Vector3 edge1{ triangle.v1 - triangle.v0 };
+			const Vector3 edge2{ triangle.v2 - triangle.v0 };
+
+			const Vector3 h{ Vector3::Cross(ray.direction, triangle.v2 ) };
+			const float a{ Vector3::Dot(edge1, ray.direction) };
+			if (AreEqual(a, 0.0f))
+			{
+				return false;
+			}
+			const float f{ 1.0f / a };
+			const Vector3 s{ ray.origin - triangle.v0 };
+			const float u{ f * Vector3::Dot(s, h) };
+			if (u < 0.0f || u > 1.0f)
+				return false;
+			const Vector3 q{ Vector3::Cross(s, edge1) };
+			const float v{ f * Vector3::Dot(ray.direction, q) };
+			if (v < 0.0f || u + v > 1.0f)
+				return false;
+			const float t{ f * Vector3::Dot(edge2, q) };
+			if (t > ray.min && t < ray.max)
+			{
+				if (ignoreHitRecord) return true;
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = triangle.materialIndex;
+				hitRecord.origin = ray.origin + (t * ray.direction);
+				hitRecord.normal = Vector3::Cross(edge1, edge2).Normalized();
+				hitRecord.t = t;
+				return true;
+			}
 			return false;
 		}
 
@@ -104,7 +136,23 @@ namespace dae
 		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			//todo W5
-			assert(false && "No Implemented Yet!");
+			//assert(false && "No Implemented Yet!");
+
+			// Loop through all triangles in the mesh, and check if they hit the ray.
+			Triangle triangle{};
+			const size_t trianglePositionsSize{ mesh.positions.size() };
+
+			for (size_t i{ 0 }; i < trianglePositionsSize; i += 3)
+			{
+				triangle.v0 = mesh.positions[i];
+				triangle.v1 = mesh.positions[i + 1];
+				triangle.v2 = mesh.positions[i + 2];
+				triangle.materialIndex = mesh.materialIndex;
+				if (HitTest_Triangle(triangle, ray, hitRecord, ignoreHitRecord))
+				{
+					return true;
+				}
+			}
 			return false;
 		}
 
