@@ -9,6 +9,7 @@
 #include "Material.h"
 #include "Scene.h"
 #include "Utils.h"
+#include <thread>
 
 using namespace dae;
 
@@ -30,91 +31,122 @@ void Renderer::Render(Scene* pScene) const
 	auto& lights = pScene->GetLights();
 
 
-	float aspectRatio{ float(m_Width) / float(m_Height) };
+
+	const int bounces{ 3 };
+
+	const float aspectRatio{ float(m_Width) / float(m_Height) };
 
 	const float fovRatio{ tan(camera.fovAngle * TO_RADIANS / 2.0f) };
 	const Matrix cameraToWorld = camera.CalculateCameraToWorld();
 
-	for (int px{}; px < m_Width; ++px)
+	const int maxThreadCount{ 16 };
+	const int widthPerThread{ m_Width / maxThreadCount };  // Width of slice (pixels) per thread
+
+	std::vector<std::thread> threads;
+	threads.reserve(int(maxThreadCount));
+
+	// 
+	for (int threadCount{}; threadCount < maxThreadCount; ++threadCount)
 	{
-		const float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fovRatio };
-		for (int py{}; py < m_Height; ++py)
+		// Create new thread for vertical slices, save them to join them after finish
+		std::thread t([=, &camera, &cameraToWorld, &materials, &lights, &fovRatio, &aspectRatio]()
 		{
-			const float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fovRatio };
-
-			const Vector3 rayDirection{ cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };
-			Ray viewRay{ camera.origin,  rayDirection };
-
-
-			ColorRGB finalColor{};
-			const int bounces{ 1 };
-			float multiplier = 1.0f;
-			for (int i{}; i < bounces; i++)
+			for (int px{ threadCount * widthPerThread }; px < ((threadCount + 1) * widthPerThread); ++px)
 			{
-				HitRecord closestHit{};
-				pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
-				if (closestHit.didHit)
+				const float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fovRatio };
+
+				float multiplier = 1.0f;
+				for (int py{}; py < m_Height; ++py)
 				{
-					for (const Light& light : lights)
+					const float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fovRatio };
+
+					const Vector3 rayDirection{ cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };
+					Ray viewRay{ camera.origin,  rayDirection };
+
+					ColorRGB finalColor{};
+					for (int i{}; i < bounces; i++)
 					{
-						// Calculate hit towards light ray
-						// Use small offset for the ray origin (use normal direction)
-						Vector3 directionToLight{ LightUtils::GetDirectionToLight(light, closestHit.origin) };
-						const float lightDistance{ directionToLight.Normalize() };
-						Ray lightRay{ closestHit.origin + closestHit.normal * 0.0001f, directionToLight, 0.0f, lightDistance };
-
-					
-					
-						// Calculate observed area (Lambert's cosine law)
-						const float observedArea{ Vector3::Dot(closestHit.normal, directionToLight) };
-					
-						// Check if shadowed
-						if (m_ShadowsEnabled && pScene->DoesHit(lightRay)) continue;  // Skip if point can't see the light
-					
-						// Calculate radiance color (light intensity)
-						const ColorRGB radianceColor{ LightUtils::GetRadiance(light, closestHit.origin) };
-						const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, -directionToLight, rayDirection) };  // Shade takes direction from light so inverse
-
-						switch (m_CurrentLightingMode)
+						HitRecord closestHit{};
+						pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
+						if (closestHit.didHit)
 						{
-							case dae::Renderer::LightingMode::ObservedArea:
-								if ((observedArea < 0)) continue;  // Skip if observedarea is negative
-								finalColor += ColorRGB(observedArea, observedArea, observedArea);
-								break;
-							case dae::Renderer::LightingMode::Radiance:
-								finalColor += radianceColor;
-								break;
-							case dae::Renderer::LightingMode::BRDF:
-								finalColor += BRDF;
-								break;
-							case dae::Renderer::LightingMode::Combined:
-								if ((observedArea < 0)) continue;  // Skip if observedarea is negative
-								finalColor += radianceColor * observedArea * BRDF;
-								break;
-						}						
+							for (const Light& light : lights)
+							{
+								// Calculate hit towards light ray
+								// Use small offset for the ray origin (use normal direction)
+								Vector3 directionToLight{ LightUtils::GetDirectionToLight(light, closestHit.origin) };
+								const float lightDistance{ directionToLight.Normalize() };
+								Ray lightRay{ closestHit.origin + closestHit.normal * 0.0001f, directionToLight, 0.0f, lightDistance };
+
+								// Calculate observed area (Lambert's cosine law)
+								const float observedArea{ Vector3::Dot(closestHit.normal, directionToLight) };
+
+								// Check if shadowed
+								if (m_ShadowsEnabled && pScene->DoesHit(lightRay))
+									continue;  // Skip if point can't see the light
+
+								// Calculate radiance color (light intensity)
+								const ColorRGB radianceColor{ LightUtils::GetRadiance(light, closestHit.origin) };
+								const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, -directionToLight, rayDirection) };  // Shade takes direction from light so inverse
+
+								switch (m_CurrentLightingMode)
+								{
+								case dae::Renderer::LightingMode::ObservedArea:
+									if ((observedArea < 0))
+										continue;  // Skip if observedarea is negative
+									finalColor += ColorRGB(observedArea, observedArea, observedArea);
+									break;
+								case dae::Renderer::LightingMode::Radiance:
+									finalColor += radianceColor;
+									break;
+								case dae::Renderer::LightingMode::BRDF:
+									finalColor += BRDF;
+									break;
+								case dae::Renderer::LightingMode::Combined:
+									if ((observedArea < 0))
+										continue;  // Skip if observedarea is negative
+									finalColor += radianceColor * observedArea * BRDF;
+									break;
+								}
+							}
+
+
+							multiplier *= 0.2f;
+							viewRay.origin = closestHit.origin + closestHit.normal * 0.0001f;
+							viewRay.direction = Vector3::Reflect(viewRay.direction, closestHit.normal);
+						}
+						else
+						{
+							ColorRGB skyColor{ colors::White };
+							finalColor += skyColor;
+						}
 					}
 
 
-					multiplier *= 0.5f;
-					viewRay.origin = closestHit.origin + closestHit.normal * 0.0001f;
-					viewRay.direction = Vector3::Reflect(viewRay.direction, closestHit.normal);
+					//Update Color in Buffer
+					finalColor.MaxToOne();
+					m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
+						static_cast<uint8_t>(finalColor.r * 255),
+						static_cast<uint8_t>(finalColor.g * 255),
+						static_cast<uint8_t>(finalColor.b * 255));
 				}
-				else
-				{
-					ColorRGB skyColor{ colors::White };
-					finalColor += skyColor;
-				}
+
 			}
+		});
 
+		threads.push_back(std::move(t));
 
-			//Update Color in Buffer
-			finalColor.MaxToOne();
-			m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
-				static_cast<uint8_t>(finalColor.r * 255),
-				static_cast<uint8_t>(finalColor.g * 255),
-				static_cast<uint8_t>(finalColor.b * 255));
-		}
 	}
+
+	// Wait for all threads to join
+	for (std::thread& t : threads)
+	{
+		t.join();
+	}
+
+
+
+
 
 	//@END
 	//Update SDL Surface

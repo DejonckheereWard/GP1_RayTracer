@@ -45,7 +45,7 @@ int main(int argc, char* args[])
 	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
 
-	const auto pScene = new Scene_W4_TestScene;
+	const auto pScene = new Scene_W4_BunnyScene;
 	pScene->Initialize();
 
 	//Start loop
@@ -92,16 +92,16 @@ int main(int argc, char* args[])
 		if (printTimer >= 1.f)
 		{
 			printTimer = 0.f;
-			std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
+			std::cout << "dFPS: " << pTimer->GetdFPS() << "\tmspf: " << pTimer->GetElapsed() * 1000.0f << "\n";
 		}
 
 		//Save screenshot after full render
 		if (takeScreenshot)
 		{
 			if (!pRenderer->SaveBufferToImage())
-				std::cout << "Screenshot saved!" << std::endl;
+				std::cout << "Screenshot saved!" << "\n";
 			else
-				std::cout << "Something went wrong. Screenshot not saved!" << std::endl;
+				std::cout << "Something went wrong. Screenshot not saved!" << "\n";
 			takeScreenshot = false;
 		}
 	}
