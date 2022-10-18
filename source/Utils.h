@@ -18,7 +18,7 @@ namespace dae
 			Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
 
 			//Vector3 a{ Vector3::Dot(ray.direction, ray.direction) };
-			float dp{ Vector3::Dot(tc, ray.direction)};  // Vector TP  (P is perpendicular to the raycast, and goes to C)
+			float dp{ Vector3::Dot(tc, ray.direction) };  // Vector TP  (P is perpendicular to the raycast, and goes to C)
 			float odSqr{ tc.SqrMagnitude() - Square(dp) };  // Power of length between P & C
 			if (odSqr > Square(sphere.radius))
 			{
@@ -28,11 +28,11 @@ namespace dae
 			float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
 			float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
 
-			
+
 			if (ti1 >= ray.min && ti1 <= ray.max)
 			{
 				if (ignoreHitRecord) return true;
-				
+
 				const Vector3 pointI1{ ray.origin + ray.direction * ti1 };  // Point I1
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = sphere.materialIndex;
@@ -62,7 +62,7 @@ namespace dae
 			// Calculate distance hitPoint
 			const float t{ Vector3::Dot((plane.origin - ray.origin), plane.normal) / Vector3::Dot(ray.direction, plane.normal) };
 
-			// Cehck if T exceeds the boundaries set in the ray struct (tMin & tMax)
+			// Check if T exceeds the boundaries set in the ray struct (tMin & tMax)
 			if ((t >= ray.min) && (t <= ray.max))
 			{
 				// We can calculate where point P is, by multiplying the direction, with the distance (t) found earlier.
@@ -89,41 +89,131 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W5
-			//assert(false && "No Implemented Yet!");
+			// Clockwise all edges of the triangle
+			const Vector3 edgeA{ triangle.v1 - triangle.v0 };
+			const Vector3 edgeB{ triangle.v2 - triangle.v1 };
+			const Vector3 edgeC{ triangle.v0 - triangle.v2 };
 
-			// Möller–Trumbore intersection algorithm
 
-			const Vector3 edge1{ triangle.v1 - triangle.v0 };
-			const Vector3 edge2{ triangle.v2 - triangle.v0 };
+			// Cross the 2 edges to get the normal of the triangle
+			const Vector3 normal{ Vector3::Cross(edgeA, edgeB).Normalized() };
 
-			const Vector3 h{ Vector3::Cross(ray.direction, triangle.v2 ) };
-			const float a{ Vector3::Dot(edge1, ray.direction) };
-			if (AreEqual(a, 0.0f))
+			// Check if the ray is parallel to the triangle
+			const float NdotV{ Vector3::Dot(ray.direction, normal) };
+			if (NdotV == 0)
+				return false;  // If the ray faces away from the plane of the triangle, it won't ever hit
+			else if (NdotV > 0)
 			{
-				return false;
+				// BACK FACE
+				if (triangle.cullMode == TriangleCullMode::BackFaceCulling)
+				{
+					// Don't render the back face if we cull the back face (culling == strip/remove)
+					return false;
+				}
+				else if (ignoreHitRecord && triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+				{
+					// Shadowrays are inverted so we invert the culling for shadowrays (ignorehitrecord true)
+					return false;
+				}
 			}
-			const float f{ 1.0f / a };
-			const Vector3 s{ ray.origin - triangle.v0 };
-			const float u{ f * Vector3::Dot(s, h) };
-			if (u < 0.0f || u > 1.0f)
-				return false;
-			const Vector3 q{ Vector3::Cross(s, edge1) };
-			const float v{ f * Vector3::Dot(ray.direction, q) };
-			if (v < 0.0f || u + v > 1.0f)
-				return false;
-			const float t{ f * Vector3::Dot(edge2, q) };
-			if (t > ray.min && t < ray.max)
+			else
 			{
-				if (ignoreHitRecord) return true;
+				// FRONT FACE
+				if (triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+				{
+					// Don't render the front face if we cull the front face
+					return false;
+				}
+				else if (ignoreHitRecord && triangle.cullMode == TriangleCullMode::BackFaceCulling)
+				{
+					// If it's a shadow ray (ignorhitrecord true), we invert the culling
+					return false;
+				}
+			}
+
+
+			// Average of the 3 points to get the center of the triangle
+			const Vector3 center{ (triangle.v0 + triangle.v1 + triangle.v2) / 3.0f };
+
+			// Calculate distance hitPoint
+			const Vector3 l{ center - ray.origin };  // Point to the center of the 'plane'
+			const float t{ Vector3::Dot(l, normal) / NdotV };
+
+			// Check if T exceeds the boundaries set in the ray struct (tMin & tMax)
+			if (t < ray.min || t > ray.max)
+				return false;  // T is out of bounds
+
+			// We can calculate where point P is, by multiplying the direction, with the distance (t) found earlier.
+			// Add that to the ray's origin to find P
+			const Vector3 p{ ray.origin + (t * ray.direction) };  // Point on the plane
+
+
+			// Now we check wether the found point is inside or outside the triangle bounds
+			//const Vector3 pointToSide{ p - triangle.v0 };
+
+			if (Vector3::Dot(normal, Vector3::Cross(edgeA, p - triangle.v0)) < 0)
+				return false;  // Point is outside the triangle
+
+			if (Vector3::Dot(normal, Vector3::Cross(edgeB, p - triangle.v1)) < 0)
+				return false;  // Point is outside the triangle
+
+			if (Vector3::Dot(normal, Vector3::Cross(edgeC, p - triangle.v2)) < 0)
+				return false;  // Point is outside the triangle
+
+			if (!ignoreHitRecord)
+			{
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = triangle.materialIndex;
-				hitRecord.origin = ray.origin + (t * ray.direction);
-				hitRecord.normal = Vector3::Cross(edge1, edge2).Normalized();
+				hitRecord.origin = p;
+				hitRecord.normal = normal;
 				hitRecord.t = t;
 				return true;
 			}
-			return false;
+
+			return true;
+
+
+
+
+
+
+
+
+			////todo W5
+			////assert(false && "No Implemented Yet!");
+
+			//// Möller–Trumbore intersection algorithm
+
+			//const Vector3 edge1{ triangle.v1 - triangle.v0 };
+			//const Vector3 edge2{ triangle.v2 - triangle.v0 };
+
+			//const Vector3 h{ Vector3::Cross(ray.direction, triangle.v2 ) };
+			//const float a{ Vector3::Dot(edge1, ray.direction) };
+			//if (AreEqual(a, 0.0f))
+			//{
+			//	return false;
+			//}
+			//const float f{ 1.0f / a };
+			//const Vector3 s{ ray.origin - triangle.v0 };
+			//const float u{ f * Vector3::Dot(s, h) };
+			//if (u < 0.0f || u > 1.0f)
+			//	return false;
+			//const Vector3 q{ Vector3::Cross(s, edge1) };
+			//const float v{ f * Vector3::Dot(ray.direction, q) };
+			//if (v < 0.0f || u + v > 1.0f)
+			//	return false;
+			//const float t{ f * Vector3::Dot(edge2, q) };
+			//if (t > ray.min && t < ray.max)
+			//{
+			//	if (ignoreHitRecord) return true;
+			//	hitRecord.didHit = true;
+			//	hitRecord.materialIndex = triangle.materialIndex;
+			//	hitRecord.origin = ray.origin + (t * ray.direction);
+			//	hitRecord.normal = Vector3::Cross(edge1, edge2).Normalized();
+			//	hitRecord.t = t;
+			//	return true;
+			//}
+			//return false;
 		}
 
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray)
@@ -193,13 +283,13 @@ namespace dae
 			switch (light.type)
 			{
 			case dae::LightType::Point:
-			{				
+			{
 				// Calculate the Radiant Power/Flux, Since it's a point light, we multiply the intensity with 4PI sterradians
 				// 4pi steradians is the area of a whole 3d unit sphere  (since point lights emit in every direction)
 				// We can cancel out the surface area to get the irradiance
 				const float radiantPower{ light.intensity };  // also called Radiant Flux
-				const float sphereRadiusSquared( (light.origin - target).SqrMagnitude());  // Radius is the distance from the light to the target
-				const float irradiance{ radiantPower / sphereRadiusSquared};
+				const float sphereRadiusSquared((light.origin - target).SqrMagnitude());  // Radius is the distance from the light to the target
+				const float irradiance{ radiantPower / sphereRadiusSquared };
 
 				return light.color * irradiance;  // Irradiancecolor
 				break;
@@ -208,7 +298,7 @@ namespace dae
 				// Directional lights are a bit simpler, they don't have any fallof or attenuation nor area, so we just return the intensity with the lightcolor
 				return light.color * light.intensity;
 				break;
-			}			
+			}
 		}
 	}
 

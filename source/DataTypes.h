@@ -114,8 +114,6 @@ namespace dae
 			indices.push_back(++startIndex);
 			indices.push_back(++startIndex);
 
-			normals.push_back(triangle.normal);
-
 			//Not ideal, but making sure all vertices are updated
 			if(!ignoreTransformUpdate)
 				UpdateTransforms();
@@ -123,7 +121,7 @@ namespace dae
 
 		void CalculateNormals()
 		{
-			
+			// Cross of 2 edges of the triangle (clockwise order of vertices because left handed system used)
 		}
 
 		void UpdateTransforms()
