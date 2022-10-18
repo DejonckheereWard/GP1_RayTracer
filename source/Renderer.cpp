@@ -67,7 +67,6 @@ void Renderer::Render(Scene* pScene) const
 					
 						// Calculate observed area (Lambert's cosine law)
 						const float observedArea{ Vector3::Dot(closestHit.normal, directionToLight) };
-						if ((observedArea < 0) ) continue;  // Skip if observedarea is negative
 					
 						// Check if shadowed
 						if (m_ShadowsEnabled && pScene->DoesHit(lightRay)) continue;  // Skip if point can't see the light
@@ -79,6 +78,7 @@ void Renderer::Render(Scene* pScene) const
 						switch (m_CurrentLightingMode)
 						{
 							case dae::Renderer::LightingMode::ObservedArea:
+								if ((observedArea < 0)) continue;  // Skip if observedarea is negative
 								finalColor += ColorRGB(observedArea, observedArea, observedArea);
 								break;
 							case dae::Renderer::LightingMode::Radiance:
@@ -88,6 +88,7 @@ void Renderer::Render(Scene* pScene) const
 								finalColor += BRDF;
 								break;
 							case dae::Renderer::LightingMode::Combined:
+								if ((observedArea < 0)) continue;  // Skip if observedarea is negative
 								finalColor += radianceColor * observedArea * BRDF;
 								break;
 						}						
