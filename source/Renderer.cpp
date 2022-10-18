@@ -49,7 +49,7 @@ void Renderer::Render(Scene* pScene) const
 	for (int threadCount{}; threadCount < maxThreadCount; ++threadCount)
 	{
 		// Create new thread for vertical slices, save them to join them after finish
-		std::thread t([=, &camera, &cameraToWorld, &materials, &lights, &fovRatio, &aspectRatio]()
+		std::thread t([=]()
 		{
 			for (int px{ threadCount * widthPerThread }; px < ((threadCount + 1) * widthPerThread); ++px)
 			{
@@ -110,7 +110,6 @@ void Renderer::Render(Scene* pScene) const
 								}
 							}
 
-
 							multiplier *= 0.2f;
 							viewRay.origin = closestHit.origin + closestHit.normal * 0.0001f;
 							viewRay.direction = Vector3::Reflect(viewRay.direction, closestHit.normal);
@@ -133,12 +132,10 @@ void Renderer::Render(Scene* pScene) const
 
 			}
 		});
-
 		threads.push_back(std::move(t));
-
 	}
 
-	// Wait for all threads to join
+	// Wait for all threads to join	
 	for (std::thread& t : threads)
 	{
 		t.join();
