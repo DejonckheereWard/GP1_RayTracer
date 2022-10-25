@@ -508,12 +508,15 @@ namespace dae
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue);	// LEFT
 
 		// Bunny
-		pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
-		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		Utils::ParseOBJ("Resources/lowpoly_bunny.obj", pMesh->positions, pMesh->normals, pMesh->indices);
 		//Utils::ParseOBJ("Resources/simple_cube.obj", pMesh->positions, pMesh->normals, pMesh->indices);
 
 		pMesh->CalculateNormals();
 		pMesh->Scale({ 2.f, 2.f, 2.f });
+		//pMesh->Scale({ 0.7f, 0.7f, 0.7f });
+		//pMesh->Translate({ 0.0f, 1.0f, 0.0f });
+
 		pMesh->UpdateTransforms();
 
 

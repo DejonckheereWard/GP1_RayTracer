@@ -128,7 +128,7 @@ namespace dae
 			// Each indice specifies the vertices of the triangle
 
 			normals.clear();
-			normals.reserve(indices.size());
+			normals.reserve(indices.size() / 3);
 
 			for (size_t i{}; i < indices.size(); i += 3)
 			{

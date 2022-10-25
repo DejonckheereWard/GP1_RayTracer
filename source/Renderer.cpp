@@ -32,7 +32,7 @@ void Renderer::Render(Scene* pScene) const
 
 
 
-	const int bounces{ 3 };
+	const int bounces{ 1 };
 
 	const float aspectRatio{ float(m_Width) / float(m_Height) };
 

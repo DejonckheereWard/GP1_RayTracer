@@ -258,8 +258,7 @@ namespace dae
 
 				}				
 			}
-
-			return false;
+			return hitRecord.didHit;
 
 			
 		}
