@@ -188,6 +188,27 @@ namespace dae
 			if (AreEqual(a, 0.0f))
 				return false;
 			
+			if (a > 0.0f )
+			{
+				// Backface hit
+				if(!ignoreHitRecord && triangle.cullMode == TriangleCullMode::BackFaceCulling)
+					// Remove the face if it's "culled" away
+					return false;
+				if (ignoreHitRecord && triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+					// Shadow rays (ignorehitrecord true) have inverted culling
+					return false;
+			}
+			else if (a < 0.0f )
+			{
+				// Frontface hit
+				if (!ignoreHitRecord && triangle.cullMode == TriangleCullMode::FrontFaceCulling)
+					// Remove the face if it's "culled" away
+					return false;
+				if (ignoreHitRecord && triangle.cullMode == TriangleCullMode::BackFaceCulling)
+					// Shadow rays (ignorehitrecord true) have inverted culling
+					return false;
+			}
+			
 			const float f{ 1.0f / a };
 			const Vector3 s{ ray.origin - triangle.v0 };
 			const float u{ f * Vector3::Dot(s, h) };
