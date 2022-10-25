@@ -42,12 +42,14 @@ namespace dae
 			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			up = Vector3::Cross(forward, right).Normalized();
 
-			return Matrix{
+			cameraToWorld = Matrix{
 				{right.x  , right.y   , right.z  , 0},
 				{up.x     , up.y      , up.z     , 0},
 				{forward.x, forward.y , forward.z, 0},
 				{origin.x , origin.y  , origin.z , 1}
 			};
+
+			return cameraToWorld;
 		}
 
 		void Update(Timer* pTimer)
@@ -133,7 +135,6 @@ namespace dae
 				totalYaw -= 360.0f;
 			else if (totalYaw < 0.0f)
 				totalYaw += 360.0f;
-			std::cout << totalYaw << "\n";
 
 			const Matrix finalRotation = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
 			forward = finalRotation.TransformVector(Vector3::UnitZ);

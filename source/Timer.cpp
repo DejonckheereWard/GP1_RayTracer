@@ -59,9 +59,14 @@ void Timer::Update()
 	}
 
 	m_TotalTime = (float)(((m_CurrentTime - m_PausedTime) - m_BaseTime) * m_SecondsPerCount);
-
+	
+	// Keep track of time history (custom)
+	m_ElapsedTimeHistory.push_back(m_ElapsedTime);
+	if (m_ElapsedTimeHistory.size() > m_ElapsedTimeHistorySize)
+		m_ElapsedTimeHistory.pop_front();
+	
 	//FPS LOGIC
-	m_FPSTimer += m_ElapsedTime;
+	m_FPSTimer += m_ElapsedTime;	
 	++m_FPSCount;
 	if (m_FPSTimer >= 1.0f)
 	{

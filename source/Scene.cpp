@@ -364,26 +364,27 @@ namespace dae
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue);  // LEFT	
 
 
-		//pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
-		//pMesh->positions = { {-0.75f, -1.f, 0.f}, {-0.75f, 1.0f, 0.f}, {0.75f, 1.f, 1.f}, {0.75f, -1.f, 0.f} };
-		//pMesh->indices = {
-		//	0, 1, 2,
-		//	0, 2, 3
-		//};
-
-		//pMesh->CalculateNormals();
-		//
-		//pMesh->Translate({ -0.f, 1.5f, 0.f });
-
-		//pMesh->UpdateTransforms();
-
-		pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
-		Utils::ParseOBJ("Resources/simple_quad.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
+		pMesh->positions = { {-0.75f, -1.f, 0.f}, {-0.75f, 1.0f, 0.f}, {0.75f, 1.f, 1.f}, {0.75f, -1.f, 0.f} };
+		pMesh->indices = {
+			0, 1, 2,
+			0, 2, 3
+		};
 
 		pMesh->CalculateNormals();
-		pMesh->Translate({ 0.f, 1.f, 0.f });
-		pMesh->Scale({ .7f, .7f, .7f });
+		
+		pMesh->Translate({ -0.f, 1.5f, 0.f });
+		pMesh->UpdateAABB();
 		pMesh->UpdateTransforms();
+
+		//pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
+		//Utils::ParseOBJ("Resources/simple_quad.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+
+		//pMesh->CalculateNormals();
+		//pMesh->Translate({ 0.f, 1.f, 0.f });
+		//pMesh->Scale({ .7f, .7f, .7f });
+		//pMesh->UpdateAABB();
+		//pMesh->UpdateTransforms();
 
 		// Lights
 		AddPointLight(Vector3{ 0.f, 5.f, 5.f }, 50.f, ColorRGB(1.f, .61f, .45f)); // BACKLIGHT
@@ -445,18 +446,21 @@ namespace dae
 		m_Meshes[0]->AppendTriangle(baseTriangle, true);
 		m_Meshes[0]->Translate({ -1.75f, 4.5f, 0.f });
 		m_Meshes[0]->CalculateNormals();
+		m_Meshes[0]->UpdateAABB();
 		m_Meshes[0]->UpdateTransforms();
 
 		m_Meshes[1] = AddTriangleMesh(TriangleCullMode::FrontFaceCulling, matLambert_White);
 		m_Meshes[1]->AppendTriangle(baseTriangle, true);
 		m_Meshes[1]->Translate({ 0.f, 4.5f, 0.f });
 		m_Meshes[1]->CalculateNormals();
+		m_Meshes[1]->UpdateAABB();
 		m_Meshes[1]->UpdateTransforms();
 
 		m_Meshes[2] = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
 		m_Meshes[2]->AppendTriangle(baseTriangle, true);
 		m_Meshes[2]->Translate({ 1.75f, 4.5f, 0.f });
 		m_Meshes[2]->CalculateNormals();
+		m_Meshes[2]->UpdateAABB();
 		m_Meshes[2]->UpdateTransforms();
 
 
@@ -477,7 +481,7 @@ namespace dae
 		const float yawAngle = (cos(pTimer->GetTotal()) + 1.f) / 2.f * PI_2;
 		for (TriangleMesh* mesh : m_Meshes)
 		{
-			mesh->RotateY(yawAngle);
+			//mesh->RotateY(yawAngle);
 			mesh->UpdateTransforms();
 		}
 		
@@ -508,15 +512,13 @@ namespace dae
 		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue);	// LEFT
 
 		// Bunny
-		pMesh = AddTriangleMesh(TriangleCullMode::NoCulling, matLambert_White);
-		Utils::ParseOBJ("Resources/lowpoly_bunny.obj", pMesh->positions, pMesh->normals, pMesh->indices);
-		//Utils::ParseOBJ("Resources/simple_cube.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
+		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj", pMesh->positions, pMesh->normals, pMesh->indices);
 
-		pMesh->CalculateNormals();
+		//pMesh->CalculateNormals();
 		pMesh->Scale({ 2.f, 2.f, 2.f });
-		//pMesh->Scale({ 0.7f, 0.7f, 0.7f });
-		//pMesh->Translate({ 0.0f, 1.0f, 0.0f });
 
+		pMesh->UpdateAABB();
 		pMesh->UpdateTransforms();
 
 

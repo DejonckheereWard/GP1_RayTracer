@@ -74,6 +74,27 @@ namespace dae {
 		return v1 - (2.f * Vector3::Dot(v1, v2) * v2);
 	}
 
+	Vector3 Vector3::Min(const Vector3& v1, const Vector3& v2)
+	{
+		// Get smallest components of the 2 vectors and combine into one
+		return {
+			std::min(v1.x, v2.x),
+			std::min(v1.y, v2.y),
+			std::min(v1.z, v2.z)
+		};
+		
+	}
+
+	Vector3 Vector3::Max(const Vector3& v1, const Vector3& v2)
+	{
+		// Get biggest components of the 2 vectors and combine into one
+		return {
+			std::max(v1.x, v2.x),
+			std::max(v1.y, v2.y),
+			std::max(v1.z, v2.z)
+		};
+	}
+
 	Vector4 Vector3::ToPoint4() const
 	{
 		return { x, y, z, 1 };
@@ -82,6 +103,17 @@ namespace dae {
 	Vector4 Vector3::ToVector4() const
 	{
 		return { x, y, z, 0 };
+	}
+
+	std::string Vector3::ToString() const
+	{
+		// Returns the vector as a string
+		std::string output{};
+		output += "(";
+		output += std::to_string(x) + ", ";
+		output += std::to_string(y) + ", ";
+		output += std::to_string(z) + ")";
+		return output;
 	}
 
 #pragma region Operator Overloads

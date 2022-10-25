@@ -2,6 +2,7 @@
 
 //Standard includes
 #include <cstdint>
+#include <deque>
 
 namespace dae
 {
@@ -24,6 +25,21 @@ namespace dae
 		uint32_t GetFPS() const { return m_FPS; };
 		float GetdFPS() const { return m_dFPS; };
 		float GetElapsed() const { return m_ElapsedTime; };
+		float GetAverageElapsed() const 
+		{
+			if (m_ElapsedTimeHistory.size() == 0) 
+				return 0.0f;
+
+			float avgTime{};
+			for (auto& time : m_ElapsedTimeHistory)
+			{
+				avgTime += time;
+			}
+			return avgTime / m_ElapsedTimeHistory.size();
+		}
+		
+		int GetHistorySize() const { return m_ElapsedTimeHistorySize; }
+
 		float GetTotal() const { return m_TotalTime; };
 		bool IsRunning() const { return !m_IsStopped; };
 
@@ -38,6 +54,8 @@ namespace dae
 		float m_dFPS = 0.0f;
 		uint32_t m_FPSCount = 0;
 
+		const int m_ElapsedTimeHistorySize{ 30 };
+		std::deque<float> m_ElapsedTimeHistory{};
 		float m_TotalTime = 0.0f;
 		float m_ElapsedTime = 0.0f;
 		float m_SecondsPerCount = 0.0f;
