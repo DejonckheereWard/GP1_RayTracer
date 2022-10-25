@@ -6,6 +6,7 @@
 #include "Math.h"
 #include "Timer.h"
 #include <iostream>
+#include <algorithm>
 
 namespace dae
 {
@@ -127,6 +128,13 @@ namespace dae
 				totalYaw += yaw;
 			}
 			
+			totalPitch = std::clamp(totalPitch, -88.0f, 88.0f);
+			if (totalYaw > 360.0f)
+				totalYaw -= 360.0f;
+			else if (totalYaw < 0.0f)
+				totalYaw += 360.0f;
+			std::cout << totalYaw << "\n";
+
 			const Matrix finalRotation = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
 			forward = finalRotation.TransformVector(Vector3::UnitZ);
 			forward.Normalize();
