@@ -284,27 +284,29 @@ namespace dae
 
 			for (size_t i{}; i < meshIndicesSize; i += 3)
 			{
-				const Vector3 v0{ mesh.transformedPositions[mesh.indices[i]] };
-				const Vector3 v1{ mesh.transformedPositions[mesh.indices[i + 1]] };
-				const Vector3 v2{ mesh.transformedPositions[mesh.indices[i + 2]] };
-				Triangle triangle(v0, v1, v2, mesh.transformedNormals[i / 3]);
+				triangle.v0 = mesh.transformedPositions[mesh.indices[i]];
+				triangle.v1 = mesh.transformedPositions[mesh.indices[i + 1]];
+				triangle.v2 = mesh.transformedPositions[mesh.indices[i + 2]];
+				triangle.normal = mesh.transformedNormals[i / 3];
 				triangle.cullMode = mesh.cullMode;
 				triangle.materialIndex = mesh.materialIndex;
 
 				HitRecord tempHitrecord{};
 				if (HitTest_Triangle(triangle, ray, tempHitrecord, ignoreHitRecord))
 				{
-					if (!closestHit)
+					if (closestHit)
 					{
-						hitRecord = tempHitrecord;
-						return true;
-					}
-					else
-					{
+						// If closesthit is true, we need to find the closest triangle and retun the hitrecord for that one
 						if (tempHitrecord.t > 0.0f && tempHitrecord.t < hitRecord.t)
 						{
 							hitRecord = tempHitrecord;
 						}
+					}
+					else
+					{
+						// If closesthit is false we just need to check if it hits anything in the mesh, and return true if it it does
+						hitRecord = tempHitrecord;
+						return true;
 					}
 
 				}
