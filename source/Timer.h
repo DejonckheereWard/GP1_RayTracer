@@ -2,7 +2,7 @@
 
 //Standard includes
 #include <cstdint>
-#include <deque>
+#include <vector>
 
 namespace dae
 {
@@ -17,6 +17,8 @@ namespace dae
 		Timer& operator=(const Timer&) = delete;
 		Timer& operator=(Timer&&) noexcept = delete;
 
+		void StartBenchmark(int numFrames = 10);
+
 		void Reset();
 		void Start();
 		void Update();
@@ -25,21 +27,6 @@ namespace dae
 		uint32_t GetFPS() const { return m_FPS; };
 		float GetdFPS() const { return m_dFPS; };
 		float GetElapsed() const { return m_ElapsedTime; };
-		float GetAverageElapsed() const 
-		{
-			if (m_ElapsedTimeHistory.size() == 0) 
-				return 0.0f;
-
-			float avgTime{};
-			for (auto& time : m_ElapsedTimeHistory)
-			{
-				avgTime += time;
-			}
-			return avgTime / m_ElapsedTimeHistory.size();
-		}
-		
-		int GetHistorySize() const { return m_ElapsedTimeHistorySize; }
-
 		float GetTotal() const { return m_TotalTime; };
 		bool IsRunning() const { return !m_IsStopped; };
 
@@ -54,8 +41,6 @@ namespace dae
 		float m_dFPS = 0.0f;
 		uint32_t m_FPSCount = 0;
 
-		const int m_ElapsedTimeHistorySize{ 30 };
-		std::deque<float> m_ElapsedTimeHistory{};
 		float m_TotalTime = 0.0f;
 		float m_ElapsedTime = 0.0f;
 		float m_SecondsPerCount = 0.0f;
@@ -64,5 +49,13 @@ namespace dae
 
 		bool m_IsStopped = true;
 		bool m_ForceElapsedUpperBound = false;
+
+		bool m_BenchmarkActive = false;
+		float m_BenchmarkHigh{ 0.f };
+		float m_BenchmarkLow{ 0.f };
+		float m_BenchmarkAvg{ 0.f };
+		int m_BenchmarkFrames{ 0 };
+		int m_BenchmarkCurrFrame{ 0 };
+		std::vector<float> m_Benchmarks{};
 	};
 }
