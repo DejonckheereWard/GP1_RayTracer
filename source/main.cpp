@@ -45,7 +45,7 @@ int main(int argc, char* args[])
 	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
 
-	const auto pScene = new Scene_W4_BunnyScene;
+	const auto pScene = new Scene_W4_ReferenceScene;
 	pScene->Initialize();
 
 	//Start loop
@@ -70,10 +70,13 @@ int main(int argc, char* args[])
 					case SDL_SCANCODE_X:
 						takeScreenshot = true;
 					case SDL_SCANCODE_F2:
-						if (not e.key.repeat) pRenderer->ToggleShadows();
+						if (not e.key.repeat)pRenderer->ToggleShadows();
 						break;
 					case SDL_SCANCODE_F3:
 						if (not e.key.repeat) pRenderer->CycleLightingMode();
+						break;
+					case SDL_SCANCODE_F4:
+						if (not e.key.repeat) pRenderer->ToggleReflections();
 						break;
 					case SDL_SCANCODE_F6:
 						if (not e.key.repeat) pTimer->StartBenchmark();

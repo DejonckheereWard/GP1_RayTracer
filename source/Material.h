@@ -24,7 +24,9 @@ namespace dae
 		 * \param v view direction
 		 * \return color
 		 */
+		
 		virtual ColorRGB Shade(const HitRecord& hitRecord = {}, const Vector3& l = {}, const Vector3& v = {}) = 0;
+		virtual float GetReflectivity() { return 0.0f; };
 	};
 #pragma endregion
 
@@ -129,6 +131,11 @@ namespace dae
 			if (m_Metalness > 0.0f) kd = ColorRGB(0, 0, 0);
 			const ColorRGB diffuseColor{ BRDF::Lambert(kd, m_Albedo)};
 			return specularColor + diffuseColor;
+		}
+
+		float GetReflectivity() override
+		{
+			return (1.0f - m_Roughness) * m_Metalness;
 		}
 
 	private:

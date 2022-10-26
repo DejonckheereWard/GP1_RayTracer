@@ -33,6 +33,7 @@ namespace dae
 
 		void CycleLightingMode();
 		void ToggleShadows() { m_ShadowsEnabled = !m_ShadowsEnabled; }
+		void ToggleReflections() { m_ReflectionsEnabled = !m_ReflectionsEnabled; }
 
 	private:
 		SDL_Window* m_pWindow{};
@@ -43,7 +44,7 @@ namespace dae
 		int m_Width{};
 		int m_Height{};
 		float m_AspectRatio{};
-		int m_Bounces{ 1 };
+		int m_Bounces{ 3 };
 
 		enum class LightingMode
 		{
@@ -55,6 +56,7 @@ namespace dae
 
 		LightingMode m_CurrentLightingMode{ LightingMode::Combined };
 		bool m_ShadowsEnabled{ true };
+		bool m_ReflectionsEnabled{ false };
 
 
 		static bool RunTests();

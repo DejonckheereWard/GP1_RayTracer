@@ -124,7 +124,7 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 	uint32_t px{ pixelIndex % m_Width };
 	uint32_t py{ pixelIndex / m_Width };
 
-	const float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1) * aspectRatio * fov };
+	const float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1.0f) * aspectRatio * fov };
 	const float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fov };
 
 	float multiplier = 1.0f;
@@ -133,8 +133,10 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 	Ray viewRay{ camera.origin,  rayDirection };
 
 	ColorRGB finalColor{};
-	for (int i{}; i < m_Bounces; i++)
+	float reflectivity{};
+	for (int bounce{}; bounce < m_Bounces; bounce++)
 	{
+		
 		HitRecord closestHit{};
 		pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
 		if (closestHit.didHit)
@@ -158,6 +160,7 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 				const ColorRGB radianceColor{ LightUtils::GetRadiance(light, closestHit.origin) };
 				const ColorRGB BRDF{ materials[closestHit.materialIndex]->Shade(closestHit, -directionToLight, rayDirection) };  // Shade takes direction from light so inverse
 
+
 				switch (m_CurrentLightingMode)
 				{
 				case dae::Renderer::LightingMode::ObservedArea:
@@ -174,29 +177,42 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 				case dae::Renderer::LightingMode::Combined:
 					if ((observedArea < 0))
 						continue;  // Skip if observedarea is negative
-					finalColor += radianceColor * observedArea * BRDF * multiplier;
+					
+					
+					if (bounce > 0)
+					{						
+						finalColor += radianceColor * BRDF * observedArea * reflectivity * multiplier;
+					}
+					else
+					{
+						finalColor += radianceColor * BRDF * observedArea;
+					}
 					break;
 				}
 			}
 
+			reflectivity = materials[closestHit.materialIndex]->GetReflectivity();  // Set reflecitivity of current object & update for later ones
 			multiplier *= 0.7f;
 			viewRay.origin = closestHit.origin + closestHit.normal * 0.0001f;
 			viewRay.direction = Vector3::Reflect(viewRay.direction, closestHit.normal);
+			if (reflectivity < FLT_EPSILON || !m_ReflectionsEnabled)
+				break;
 		}
 		else
 		{
 			ColorRGB skyColor{ colors::White };
 			finalColor += skyColor;
 		}
-
-
+		
 		//Update Color in Buffer
-		finalColor.MaxToOne();
-		m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
-			static_cast<uint8_t>(finalColor.r * 255),
-			static_cast<uint8_t>(finalColor.g * 255),
-			static_cast<uint8_t>(finalColor.b * 255));
+
+
 	}
+	finalColor.MaxToOne();
+	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
+		static_cast<uint8_t>(finalColor.r * 255),
+		static_cast<uint8_t>(finalColor.g * 255),
+		static_cast<uint8_t>(finalColor.b * 255));
 
 }
 
