@@ -35,11 +35,21 @@ namespace dae
 
 	Vector3 Matrix::TransformVector(float x, float y, float z) const
 	{
+		const Vector4 d0{ data[0] * x };
+		const Vector4 d1{ data[1] * y };
+		const Vector4 d2{ data[2] * z };
+
 		return Vector3{
-			data[0].x * x + data[1].x * y + data[2].x * z,
-			data[0].y * x + data[1].y * y + data[2].y * z,
-			data[0].z * x + data[1].z * y + data[2].z * z
+			d0.x + d1.x + d2.x,
+			d0.y + d1.y + d2.y,
+			d0.z + d1.z + d2.z,
 		};
+
+		//return Vector3{
+		//	data[0].x * x + data[1].x * y + data[2].x * z,
+		//	data[0].y * x + data[1].y * y + data[2].y * z,
+		//	data[0].z * x + data[1].z * y + data[2].z * z
+		//};
 	}
 
 	Vector3 Matrix::TransformPoint(const Vector3& p) const
@@ -49,12 +59,24 @@ namespace dae
 
 	Vector3 Matrix::TransformPoint(float x, float y, float z) const
 	{
+		const Vector4 d0{ data[0] * x };
+		const Vector4 d1{ data[1] * y };
+		const Vector4 d2{ data[2] * z };
+
 		return Vector3{
-			data[0].x * x + data[1].x * y + data[2].x * z + data[3].x,
-			data[0].y * x + data[1].y * y + data[2].y * z + data[3].y,
-			data[0].z * x + data[1].z * y + data[2].z * z + data[3].z,
+			d0.x + d1.x + d2.x + data[3].x,
+			d0.y + d1.y + d2.y + data[3].y,
+			d0.z + d1.z + d2.z + data[3].z,
 		};
+
+		//return Vector3{
+		//	data[0].x * x + data[1].x * y + data[2].x * z + data[3].x,
+		//	data[0].y * x + data[1].y * y + data[2].y * z + data[3].y,
+		//	data[0].z * x + data[1].z * y + data[2].z * z + data[3].z,
+		//};
 	}
+
+
 
 	const Matrix& Matrix::Transpose()
 	{

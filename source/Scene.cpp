@@ -74,7 +74,7 @@ namespace dae
 		for (size_t i{}; i < triangleMeshGeometriesSize; ++i)
 		{
 			HitRecord hitInfo{};
-			GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[i], ray, hitInfo, false, true);
+			GeometryUtils::HitTest_TriangleMesh(m_TriangleMeshGeometries[i], ray, hitInfo, false);
 			if (hitInfo.t > 0.0f && hitInfo.t < closestHit.t)
 			{
 				closestHit = hitInfo;
@@ -320,7 +320,7 @@ namespace dae
 #pragma endregion
 	void Scene_W3_Test::Initialize()
 	{
-		m_Camera.origin = { 0.f, 1.f, -5.0f }; 
+		m_Camera.origin = { 0.f, 1.f, -5.0f };
 		m_Camera.SetFov(45.0f);
 
 		const auto matLambert_Red = AddMaterial(new Material_Lambert(colors::Red, 1.f));
@@ -373,7 +373,7 @@ namespace dae
 		};
 
 		pMesh->CalculateNormals();
-		
+
 		pMesh->Translate({ -0.f, 1.5f, 0.f });
 		pMesh->UpdateAABB();
 		pMesh->UpdateTransforms();
@@ -469,7 +469,7 @@ namespace dae
 		AddPointLight({ 0.f, 5.f, 5.f }, 50.f, { 1.f, .61f, .45f }); // BACKLIGHT
 		AddPointLight({ -2.5f, 5.f, -5.f }, 70.f, { 1.f, .8f, .45f }); // FRONT LIGHT LEFT
 		AddPointLight({ 2.5f, 2.5f, -5.f }, 50.f, { 0.34f, .47f, .68f });
-		
+
 	}
 	void Scene_W4_ReferenceScene::Update(dae::Timer* pTimer)
 	{
@@ -482,16 +482,15 @@ namespace dae
 		const float yawAngle = (cos(pTimer->GetTotal()) + 1.f) / 2.f * PI_2;
 		for (TriangleMesh* mesh : m_Meshes)
 		{
-			//mesh->RotateY(yawAngle);
+			mesh->RotateY(yawAngle);
 			mesh->UpdateTransforms();
 		}
-		
+
 	}
 	void Scene_W4_BunnyScene::Initialize()
 	{
-		sceneName = "Reference Scene";
+		sceneName = "Bunny Scene";
 		m_Camera.origin = { 0.f, 3.f, -9.f };
-		m_Camera.SetFov(45.0f);
 		m_Camera.SetFov(45.0f);
 
 		// Materials
@@ -523,7 +522,6 @@ namespace dae
 		pMesh->UpdateAABB();
 		pMesh->UpdateTransforms();
 
-
 		// Lights
 		AddPointLight({ 0.f, 5.f, 5.f }, 50.f, { 1.f, .61f, .45f }); // BACKLIGHT
 		AddPointLight({ -2.5f, 5.f, -5.f }, 70.f, { 1.f, .8f, .45f }); // FRONT LIGHT LEFT
@@ -532,7 +530,10 @@ namespace dae
 	void Scene_W4_BunnyScene::Update(dae::Timer* pTimer)
 	{
 		Scene::Update(pTimer);
-		pMesh->RotateY(PI_DIV_4 * pTimer->GetTotal() / 4.0f);
+		
+		const float yawAngle = (cos(pTimer->GetTotal()) + 1.f) / 2.f * PI_2;
+
+		pMesh->RotateY(yawAngle);
 		pMesh->UpdateTransforms();
 	}
 }

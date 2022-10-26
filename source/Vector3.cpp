@@ -17,7 +17,7 @@ namespace dae {
 
 	Vector3::Vector3(const Vector3& from, const Vector3& to) : x(to.x - from.x), y(to.y - from.y), z(to.z - from.z){}
 
-	float Vector3::Magnitude() const
+	inline float Vector3::Magnitude() const
 	{
 		return sqrtf(x * x + y * y + z * z);
 	}
@@ -26,27 +26,32 @@ namespace dae {
 	{
 		return x * x + y * y + z * z;
 	}
-
+	
 	float Vector3::Normalize()
 	{
 		const float m = Magnitude();
-		x /= m;
-		y /= m;
-		z /= m;
+		*this /= m;
 
 		return m;
+
+		//x /= m;
+		//y /= m;
+		//z /= m;
+
+		//return m;
 	}
 
 	Vector3 Vector3::Normalized() const
 	{
 		const float m = Magnitude();
-		return { x / m, y / m, z / m };
+		return { *this / m };
+		
+		//return { x / m, y / m, z / m };
 	}
+	
 
-	float Vector3::Dot(const Vector3& v1, const Vector3& v2)
+	inline float Vector3::Dot(const Vector3& v1, const Vector3& v2)
 	{
-		//todo W1
-		//assert(false && "Not Implemented Yet");
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 	}
 
@@ -59,19 +64,19 @@ namespace dae {
 		};
 	}
 
-	Vector3 Vector3::Project(const Vector3& v1, const Vector3& v2)
+	inline Vector3 Vector3::Project(const Vector3& v1, const Vector3& v2)
 	{
 		return (v2 * (Dot(v1, v2) / Dot(v2, v2)));
 	}
 
-	Vector3 Vector3::Reject(const Vector3& v1, const Vector3& v2)
+	inline Vector3 Vector3::Reject(const Vector3& v1, const Vector3& v2)
 	{
 		return (v1 - v2 * (Dot(v1, v2) / Dot(v2, v2)));
 	}
 
 	Vector3 Vector3::Reflect(const Vector3& v1, const Vector3& v2)
 	{
-		return v1 - (2.f * Vector3::Dot(v1, v2) * v2);
+		return v1 - (2.f * Dot(v1, v2) * v2);
 	}
 
 	Vector3 Vector3::Min(const Vector3& v1, const Vector3& v2)
@@ -105,7 +110,7 @@ namespace dae {
 		return { x, y, z, 0 };
 	}
 
-	std::string Vector3::ToString() const
+	inline std::string Vector3::ToString() const
 	{
 		// Returns the vector as a string
 		std::string output{};

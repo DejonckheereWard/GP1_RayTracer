@@ -62,7 +62,12 @@ namespace dae
 			// Check if ray hits the plane, and where the hit is.
 
 			// Calculate distance hitPoint
-			const float t{ Vector3::Dot((plane.origin - ray.origin), plane.normal) / Vector3::Dot(ray.direction, plane.normal) };
+			const float rayDotNormal{ Vector3::Dot((plane.origin - ray.origin), plane.normal) };
+
+			if (rayDotNormal > 0.0f)
+				return false;
+
+			const float t{ rayDotNormal / Vector3::Dot(ray.direction, plane.normal) };
 
 			// Check if T exceeds the boundaries set in the ray struct (tMin & tMax)
 			if ((t >= ray.min) && (t <= ray.max))
@@ -91,7 +96,6 @@ namespace dae
 		//TRIANGLE HIT-TESTS
 		inline bool HitTest_Triangle(const Triangle& triangle, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-
 #ifdef MOLLER_TRUMBORE
 			// Möller–Trumbore intersection algorithm
 			const Vector3 edge1{ triangle.v1 - triangle.v0 };
@@ -270,7 +274,7 @@ namespace dae
 
 		}
 
-		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false, bool closestHit = false)
+		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			// Opitimization using slabtest
 			// Checks if ray hits the slab/bounding box (AABB), stops the calculation if ray doesn't hit this box
@@ -294,19 +298,13 @@ namespace dae
 				HitRecord tempHitrecord{};
 				if (HitTest_Triangle(triangle, ray, tempHitrecord, ignoreHitRecord))
 				{
-					if (closestHit)
-					{
-						// If closesthit is true, we need to find the closest triangle and retun the hitrecord for that one
-						if (tempHitrecord.t > 0.0f && tempHitrecord.t < hitRecord.t)
-						{
-							hitRecord = tempHitrecord;
-						}
-					}
-					else
-					{
-						// If closesthit is false we just need to check if it hits anything in the mesh, and return true if it it does
-						hitRecord = tempHitrecord;
+					if (ignoreHitRecord)
+					{						
 						return true;
+					}					
+					else if (tempHitrecord.t > 0.0f && tempHitrecord.t < hitRecord.t)
+					{
+						hitRecord = tempHitrecord;
 					}
 
 				}

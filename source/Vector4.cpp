@@ -10,17 +10,17 @@ namespace dae
 	Vector4::Vector4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
 	Vector4::Vector4(const Vector3& v, float _w) : x(v.x), y(v.y), z(v.z), w(_w) {}
 
-	float Vector4::Magnitude() const
+	inline float Vector4::Magnitude() const
 	{
-		return sqrtf(x * x + y * y + z * z + w * w);
+		return std::sqrtf(x * x + y * y + z * z + w * w);
 	}
 
-	float Vector4::SqrMagnitude() const
+	inline float Vector4::SqrMagnitude() const
 	{
 		return x * x + y * y + z * z + w * w;
 	}
 
-	float Vector4::Normalize()
+	inline float Vector4::Normalize()
 	{
 		const float m = Magnitude();
 		x /= m;
@@ -31,7 +31,7 @@ namespace dae
 		return m;
 	}
 
-	Vector4 Vector4::Normalized() const
+	inline Vector4 Vector4::Normalized() const
 	{
 		const float m = Magnitude();
 		return { x / m, y / m, z / m, w / m };

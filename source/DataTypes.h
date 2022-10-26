@@ -19,7 +19,7 @@ namespace dae
 	struct Plane
 	{
 		Vector3 origin{};
-		Vector3 normal{};
+		Vector3 normal{};		
 
 		unsigned char materialIndex{ 0 };
 	};
@@ -199,65 +199,37 @@ namespace dae
 				minAABB = Vector3::Min(minAABB, p);
 				maxAABB = Vector3::Max(maxAABB, p);
 			}
-
-			//if (positions.size() > 0)
-			//{
-			//	minAABB = positions[0];
-			//	maxAABB = positions[0];
-
-			//	for (auto& p : positions)
-			//	{
-			//		minAABB = Vector3::Min(p, minAABB);
-			//		maxAABB = Vector3::Max(p, maxAABB);
-			//	}
-			//}
-
 		}
 
 		void UpdateTransformedAABB(const Matrix& finalTransform)
 		{
-			// Instead of transforming every position, we can use the min/max AABB to calculate the transformed AAB
-			// We loop over all points of the cube (8) and check which one is the new min & max after transforming			
-			
-			for (int x = 0; x < 2; x++)
-			{
-				for (int y = 0; y < 2; y++)
-				{
-					for (int z = 0; z < 2; z++)
-					{
-						const Vector3 p = finalTransform.TransformPoint(Vector3{ x ? minAABB.x : maxAABB.x, y ? minAABB.y : maxAABB.y, z ? minAABB.z : maxAABB.z });
-						transformedMinAABB = Vector3::Min(transformedMinAABB, p);
-						transformedMaxAABB = Vector3::Max(transformedMaxAABB, p);
-					}
-				}
-			}			
+			// Instead of transforming every position, we can use the min/max AABB to calculate the transformed AAB		
 
-			//Vector3 tMinAABB = finalTransform.TransformPoint(minAABB);
-			//Vector3 tMaxAABB = tMinAABB;
-			//Vector3 tAABB = finalTransform.TransformPoint(maxAABB.x, minAABB.y, minAABB.z);
-			//tMinAABB = Vector3::Min(tAABB, tMinAABB);
-			//tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
-			//tAABB = finalTransform.TransformPoint(maxAABB.x, minAABB.y, maxAABB.z);
-			//tMinAABB = Vector3::Min(tAABB, tMinAABB);
-			//tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
-			//tAABB = finalTransform.TransformPoint(minAABB.x, minAABB.y, maxAABB.z);
-			//tMinAABB = Vector3::Min(tAABB, tMinAABB);
-			//tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
-			//tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, minAABB.z);
-			//tMinAABB = Vector3::Min(tAABB, tMinAABB);
-			//tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
-			//tAABB = finalTransform.TransformPoint(maxAABB.x, maxAABB.y, minAABB.z);
-			//tMinAABB = Vector3::Min(tAABB, tMinAABB);
-			//tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
-			//tAABB = finalTransform.TransformPoint(maxAABB);
-			//tMinAABB = Vector3::Min(tAABB, tMinAABB);
-			//tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
-			//tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, minAABB.z);
-			//tMinAABB = Vector3::Min(tAABB, tMinAABB);
-			//tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
-			//transformedMinAABB = tMinAABB;
-			//transformedMaxAABB = tMaxAABB;
-			
+			Vector3 tMinAABB = finalTransform.TransformPoint(minAABB);
+			Vector3 tMaxAABB = tMinAABB;
+			Vector3 tAABB = finalTransform.TransformPoint(maxAABB.x, minAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+			tAABB = finalTransform.TransformPoint(maxAABB.x, minAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+			tAABB = finalTransform.TransformPoint(minAABB.x, minAABB.y, maxAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+			tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+			tAABB = finalTransform.TransformPoint(maxAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+			tAABB = finalTransform.TransformPoint(maxAABB);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+			tAABB = finalTransform.TransformPoint(minAABB.x, maxAABB.y, minAABB.z);
+			tMinAABB = Vector3::Min(tAABB, tMinAABB);
+			tMaxAABB = Vector3::Max(tAABB, tMaxAABB);
+			transformedMinAABB = tMinAABB;
+			transformedMaxAABB = tMaxAABB;			
 		}
 	};
 #pragma endregion

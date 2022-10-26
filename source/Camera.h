@@ -50,10 +50,10 @@ namespace dae
 			up = Vector3::Cross(forward, right).Normalized();
 
 			cameraToWorld = Matrix{
-				{right.x  , right.y   , right.z  , 0},
-				{up.x     , up.y      , up.z     , 0},
-				{forward.x, forward.y , forward.z, 0},
-				{origin.x , origin.y  , origin.z , 1}
+				{ right.x  , right.y   , right.z  , 0 },
+				{ up.x     , up.y      , up.z     , 0 },
+				{ forward.x, forward.y , forward.z, 0 },
+				{ origin.x , origin.y  , origin.z , 1 }
 			};
 
 			return cameraToWorld;
