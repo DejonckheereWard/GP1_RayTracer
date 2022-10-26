@@ -42,6 +42,7 @@ namespace dae
 
 		int m_Width{};
 		int m_Height{};
+		float m_AspectRatio{};
 		int m_Bounces{ 1 };
 
 		enum class LightingMode
@@ -56,6 +57,6 @@ namespace dae
 		bool m_ShadowsEnabled{ true };
 
 
-		static int RunTests();
+		static bool RunTests();
 	};
 }

@@ -28,7 +28,7 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	//Initialize
 	SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
 	m_pBufferPixels = static_cast<uint32_t*>(m_pBuffer->pixels);
-	RunTests();
+	assert(RunTests());
 }
 
 void Renderer::Render(Scene* pScene) const
@@ -36,10 +36,9 @@ void Renderer::Render(Scene* pScene) const
 	Camera& camera = pScene->GetCamera();
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
-
-	const float aspectRatio{ m_Width / float(m_Height) };
-
-	const float fovRatio{ tan(camera.fovAngle * TO_RADIANS / 2.0f) };
+	
+	const float aspectRatio{ m_Width / float(m_Height) };	
+	
 	camera.CalculateCameraToWorld();
 
 	const uint32_t numPixels = m_Width * m_Height;
@@ -100,7 +99,7 @@ void Renderer::Render(Scene* pScene) const
 	//concurrency::parallel_for()
 	concurrency::parallel_for((uint32_t)0, numPixels, [=, this](int pixelIndex)
 		{
-			RenderPixel(pScene, pixelIndex, fovRatio, aspectRatio, camera, lights, materials);
+			RenderPixel(pScene, pixelIndex, camera.fovRatio, aspectRatio, camera, lights, materials);
 		});
 
 #else
@@ -230,7 +229,7 @@ void dae::Renderer::CycleLightingMode()
 	}
 }
 
-int Renderer::RunTests()
+bool Renderer::RunTests()
 {
 	// Test dot & cross product for vector3 & vector4
 	assert(int(roundf(Vector3::Dot(Vector3::UnitX, Vector3::UnitX))) == 1);  // Should be 1 -> same direction
@@ -238,5 +237,5 @@ int Renderer::RunTests()
 	assert(int(roundf(Vector3::Dot(Vector3::UnitX, Vector3::UnitY))) == 0);  // Should be 0 -> perpendicular direction
 
 
-	return 0;
+	return true;
 }

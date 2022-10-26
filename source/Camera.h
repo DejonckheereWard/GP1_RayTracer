@@ -14,15 +14,17 @@ namespace dae
 	{
 		Camera() = default;
 
-		Camera(const Vector3& _origin, float _fovAngle) :
+		Camera(const Vector3& _origin, float _fovAngle = 45.0f) :
 			origin{ _origin },
-			fovAngle{ _fovAngle }
+			fovAngle{ _fovAngle },
+			fovRatio{ tanf(_fovAngle * TO_RADIANS / 2.0f) }
 		{
 		}
 
 
 		Vector3 origin{};
-		float fovAngle{ 45.f };
+		float fovAngle{};
+		float fovRatio{};
 		const float movementSpeed{ 7.0f };
 		const float rotationSpeed{ 20.0f };
 		const float keyboardRotationSpeed{ 80.0f };
@@ -36,6 +38,11 @@ namespace dae
 
 		Matrix cameraToWorld{};
 
+		void SetFov(float angle)
+		{
+			fovAngle = angle;
+			fovRatio = tanf(angle * TO_RADIANS / 2.0f);
+		}
 
 		Matrix CalculateCameraToWorld()
 		{

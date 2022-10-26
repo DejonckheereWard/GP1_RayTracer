@@ -96,14 +96,11 @@ namespace dae
 			// Möller–Trumbore intersection algorithm
 			const Vector3 edge1{ triangle.v1 - triangle.v0 };
 			const Vector3 edge2{ triangle.v2 - triangle.v0 };
-
+			
 			const Vector3 h{ Vector3::Cross(ray.direction, edge2) };
 			const float a{ Vector3::Dot(edge1, h) };
 
-			if (AreEqual(a, 0.0f))
-				return false;
-
-			if (a < 0.0f)
+			if (a < -FLT_EPSILON)
 			{
 				// Backface hit
 				if (!ignoreHitRecord && triangle.cullMode == TriangleCullMode::BackFaceCulling)
@@ -113,7 +110,7 @@ namespace dae
 					// Shadow rays (ignorehitrecord true) have inverted culling
 					return false;
 			}
-			else if (a > 0.0f)
+			else if (a > FLT_EPSILON)
 			{
 				// Frontface hit
 				if (!ignoreHitRecord && triangle.cullMode == TriangleCullMode::FrontFaceCulling)
@@ -122,6 +119,10 @@ namespace dae
 				if (ignoreHitRecord && triangle.cullMode == TriangleCullMode::BackFaceCulling)
 					// Shadow rays (ignorehitrecord true) have inverted culling
 					return false;
+			}
+			else
+			{
+				return false;
 			}
 
 			const float f{ 1.0f / a };
@@ -247,30 +248,6 @@ namespace dae
 		{
 			// Perform slabtest on the mesh (acceleration structures)
 
-			//float tmin{FLT_MAX};
-			//float tmax{-FLT_MAX};
-
-			//const Vector3 t1{ (mesh.transformedMinAABB - ray.origin) };
-			//const Vector3 t2{ (mesh.transformedMaxAABB - ray.origin) };
-
-			//const float tx1{ t1.x / ray.direction.x };
-			//const float tx2{ t2.x / ray.direction.x };
-			//tmin = std::min(tmin, std::min(tx1, tx2));
-			//tmax = std::max(tmax, std::max(tx1, tx2));
-
-			//const float ty1{ t1.y / ray.direction.y };
-			//const float ty2{ t2.y / ray.direction.y };
-			//tmin = std::min(tmin, std::min(ty1, ty2));
-			//tmax = std::max(tmax, std::max(ty1, ty2));
-
-			//const float tz1{ t1.z / ray.direction.z };
-			//const float tz2{ t1.z / ray.direction.z };
-			//
-			//tmin = std::min(tmin, std::min(tz1, tz2));
-			//tmax = std::max(tmax, std::max(tz1, tz2));
-
-			//return tmax > 0 && tmax >= tmin;
-
 			float tx1 = (mesh.transformedMinAABB.x - ray.origin.x) / ray.direction.x;
 			float tx2 = (mesh.transformedMaxAABB.x - ray.origin.x) / ray.direction.x;
 
@@ -373,6 +350,7 @@ namespace dae
 			// Radiant Intensity (which we already know 'light.intensity') combined with the Irradiance.
 			switch (light.type)
 			{
+			default:
 			case dae::LightType::Point:
 			{
 				// Calculate the Radiant Power/Flux, Since it's a point light, we multiply the intensity with 4PI sterradians

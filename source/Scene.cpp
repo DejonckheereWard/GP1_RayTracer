@@ -230,7 +230,7 @@ namespace dae
 	void Scene_W2::Initialize()
 	{
 		m_Camera.origin = { 0.f, 3.f, -9.f };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.SetFov(45.0f);
 
 		// default: Material id0 >> SolidColor Material (RED)
 		constexpr unsigned char matId_Solid_Red = 0;
@@ -271,7 +271,7 @@ namespace dae
 	void Scene_W3::Initialize()
 	{
 		m_Camera.origin = { 0.0f, 3.0f, -9.0f };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.SetFov(45.0f);
 
 		const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 1.f));
 		const auto matCt_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.6f));
@@ -319,8 +319,8 @@ namespace dae
 #pragma endregion
 	void Scene_W3_Test::Initialize()
 	{
-		m_Camera.origin = { 0.f, 1.f, -5.0f };
-		m_Camera.fovAngle = 45.0f;
+		m_Camera.origin = { 0.f, 1.f, -5.0f }; 
+		m_Camera.SetFov(45.0f);
 
 		const auto matLambert_Red = AddMaterial(new Material_Lambert(colors::Red, 1.f));
 		const auto matLambert_Blue = AddMaterial(new Material_LambertPhong(colors::Blue, 1.f, 1.f, 60.0f));
@@ -350,7 +350,7 @@ namespace dae
 	void Scene_W4_TestScene::Initialize()
 	{
 		m_Camera.origin = { 0.f, 1.f, -5.f };
-		m_Camera.fovAngle = 45.0f;
+		m_Camera.SetFov(45.0f);
 
 		// Materials
 		const auto matLambert_GrayBlue = AddMaterial(new Material_Lambert({ .49f, .57f, .57f }, 1.f));
@@ -409,7 +409,7 @@ namespace dae
 	{
 		sceneName = "Reference Scene";
 		m_Camera.origin = { 0.f, 3.f, -9.f };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.SetFov(45.0f);
 
 		// Materials
 		const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 1.f));
@@ -490,7 +490,8 @@ namespace dae
 	{
 		sceneName = "Reference Scene";
 		m_Camera.origin = { 0.f, 3.f, -9.f };
-		m_Camera.fovAngle = 45.f;
+		m_Camera.SetFov(45.0f);
+		m_Camera.SetFov(45.0f);
 
 		// Materials
 		const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 1.f));

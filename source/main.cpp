@@ -45,7 +45,7 @@ int main(int argc, char* args[])
 	const auto pTimer = new Timer();
 	const auto pRenderer = new Renderer(pWindow);
 
-	const auto pScene = new Scene_W4_TestScene;
+	const auto pScene = new Scene_W4_BunnyScene;
 	pScene->Initialize();
 
 	//Start loop
@@ -75,6 +75,9 @@ int main(int argc, char* args[])
 					case SDL_SCANCODE_F3:
 						if (not e.key.repeat) pRenderer->CycleLightingMode();
 						break;
+					case SDL_SCANCODE_F6:
+						if (not e.key.repeat) pTimer->StartBenchmark();
+						break;
 				}
 			}
 			
@@ -92,10 +95,7 @@ int main(int argc, char* args[])
 		if (printTimer >= 1.f)
 		{
 			printTimer = 0.f;
-			std::cout << "dFPS: " << pTimer->GetdFPS()
-				<< "\tms/frame: " << pTimer->GetElapsed() * 1000.0f
-				<< "\tavg(" << pTimer->GetHistorySize() << ") ms/frame: " << pTimer->GetAverageElapsed() * 1000.0f
-				<< "\n";
+			std::cout << "dFPS: " << pTimer->GetdFPS() << "\n";
 		}
 
 		//Save screenshot after full render
