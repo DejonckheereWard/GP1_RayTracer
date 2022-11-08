@@ -47,6 +47,7 @@ int main(int argc, char* args[])
 
 	const auto pScene = new Scene_W4_ReferenceScene;
 	pScene->Initialize();
+	pRenderer->SetReflections(pScene->GetReflectionsEnabled());
 
 	//Start loop
 	pTimer->Start();

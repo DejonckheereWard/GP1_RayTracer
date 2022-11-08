@@ -15,23 +15,23 @@ namespace dae
 		Vector3(const Vector3& from, const Vector3& to);
 		Vector3(const Vector4& v);
 
-		float Magnitude() const;
-		float SqrMagnitude() const;
+		float Magnitude() const noexcept;
+		float SqrMagnitude() const noexcept;
 		float Normalize();
 		Vector3 Normalized() const;
 
-		static float Dot(const Vector3& v1, const Vector3& v2);
-		static Vector3 Cross(const Vector3& v1, const Vector3& v2);
+		static float Dot(const Vector3& v1, const Vector3& v2) noexcept;
+		static Vector3 Cross(const Vector3& v1, const Vector3& v2) noexcept;
 		static Vector3 Project(const Vector3& v1, const Vector3& v2);
 		static Vector3 Reject(const Vector3& v1, const Vector3& v2);
 		static Vector3 Reflect(const Vector3& v1, const Vector3& v2);
 		static Vector3 Lico(float f1, const Vector3& v1, float f2, const Vector3& v2, float f3, const Vector3& v3);
 
-		static Vector3 Min(const Vector3& v1, const Vector3& v2);
-		static Vector3 Max(const Vector3& v1, const Vector3& v2);
+		static Vector3 Min(const Vector3& v1, const Vector3& v2) noexcept;
+		static Vector3 Max(const Vector3& v1, const Vector3& v2) noexcept;
 		
-		Vector4 ToPoint4() const;
-		Vector4 ToVector4() const;
+		Vector4 ToPoint4() const noexcept;
+		Vector4 ToVector4() const noexcept;
 
 		std::string ToString() const;
 

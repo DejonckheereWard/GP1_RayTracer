@@ -7,6 +7,8 @@
 
 #define MOLLER_TRUMBORE
 
+//#define ANALYTIC  // Use analytic sphere collision, else geometric
+
 namespace dae
 {
 	namespace GeometryUtils
@@ -15,6 +17,42 @@ namespace dae
 		//SPHERE HIT-TESTS
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
+
+#ifdef ANALYTIC
+#pragma region Analytic
+
+			Vector3 L = sphere.origin - ray.origin;
+			float tca = Vector3::Dot(L, ray.direction);
+
+			if (tca < 0) 
+				return false;
+			
+			float d2 = Vector3::Dot(L, L) - tca * tca;
+			
+			if (d2 > sphere.radius * sphere.radius)
+				return false;
+			
+
+			const float thc = sqrtf(sphere.radius * sphere.radius - d2);
+			const float t0 = tca - thc;
+
+			if (t0 >= ray.min && t0 <= ray.max)
+			{
+				if (ignoreHitRecord)
+					return true;
+
+				hitRecord.didHit = true;
+				hitRecord.materialIndex = sphere.materialIndex;
+				hitRecord.t = t0;
+				hitRecord.origin = ray.origin + (ray.direction * hitRecord.t);
+				hitRecord.normal = (hitRecord.origin - sphere.origin) / sphere.radius;
+				return true;
+			}
+			return false;
+			
+			
+#pragma endregion
+#else
 #pragma region Geometric
 			//Vector from ray origin to center of sphere
 			Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
@@ -39,12 +77,13 @@ namespace dae
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = sphere.materialIndex;
 				hitRecord.origin = pointI1;
-				hitRecord.normal = (pointI1 - sphere.origin).Normalized();
+				hitRecord.normal = (pointI1 - sphere.origin) / sphere.radius;
 				hitRecord.t = ti1;
 				return true;
 			}
 			return false;
 #pragma endregion
+#endif // ANALYTIC
 		}
 
 		inline bool HitTest_Sphere(const Sphere& sphere, const Ray& ray)
@@ -280,7 +319,7 @@ namespace dae
 			// Checks if ray hits the slab/bounding box (AABB), stops the calculation if ray doesn't hit this box
 			if (!SlabTest_TriangleMesh(mesh, ray))
 				return false;
-
+						
 			// Loop through all triangles in the mesh, and check if they hit the ray.
 			Triangle triangle{};
 			const size_t trianglePositionsSize{ mesh.positions.size() };

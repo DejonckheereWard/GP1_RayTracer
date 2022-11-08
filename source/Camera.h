@@ -21,7 +21,6 @@ namespace dae
 		{
 		}
 
-
 		Vector3 origin{};
 		float fovAngle{};
 		float fovRatio{};
@@ -35,8 +34,10 @@ namespace dae
 
 		float totalPitch{ 0.f };
 		float totalYaw{ 0.f };
-
+		
 		Matrix cameraToWorld{};
+		
+		bool updateRayDirections{ true };  // If true, raydirections will have to be updated
 
 		void SetFov(float angle)
 		{
@@ -49,15 +50,22 @@ namespace dae
 			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
 			up = Vector3::Cross(forward, right).Normalized();
 
+			//cameraToWorld = Matrix{
+			//	{ right.x  , right.y   , right.z  , 0 },
+			//	{ up.x     , up.y      , up.z     , 0 },
+			//	{ forward.x, forward.y , forward.z, 0 },
+			//	{ origin.x , origin.y  , origin.z , 1 }
+			//};
+
 			cameraToWorld = Matrix{
-				{ right.x  , right.y   , right.z  , 0 },
-				{ up.x     , up.y      , up.z     , 0 },
-				{ forward.x, forward.y , forward.z, 0 },
-				{ origin.x , origin.y  , origin.z , 1 }
+				right,
+				up,
+				forward,
+				origin
 			};
 
 			return cameraToWorld;
-		}
+		}	
 
 		void Update(Timer* pTimer)
 		{
@@ -65,51 +73,63 @@ namespace dae
 
 			//Keyboard Input
 			const uint8_t* pKeyboardState = SDL_GetKeyboardState(nullptr);
+			bool hasMoved{ false };
+
+			//Mouse Input
+			int mouseX{}, mouseY{};
+			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
 			// Keyboard movement of the camera
 			if (pKeyboardState[SDL_SCANCODE_W])
 			{
 				origin += forward * movementSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_S])
 			{
 				origin -= forward * movementSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_D])
 			{
 				origin += right * movementSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_A])
 			{
 				origin -= right * movementSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_SPACE])
 			{
 				origin += up * movementSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_LSHIFT])
 			{
 				origin -= up * movementSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_UP])
 			{
 				totalPitch += keyboardRotationSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_DOWN])
 			{
 				totalPitch -= keyboardRotationSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_LEFT])
 			{
 				totalYaw -= keyboardRotationSpeed * deltaTime;
+				hasMoved = true;
 			}
 			if (pKeyboardState[SDL_SCANCODE_RIGHT])
 			{
 				totalYaw += keyboardRotationSpeed * deltaTime;
+				hasMoved = true;
 			}
-			//Mouse Input
-			int mouseX{}, mouseY{};
-			const uint32_t mouseState = SDL_GetRelativeMouseState(&mouseX, &mouseY);
 
 			// Mouse movements / rotation of the camera
 			if ((mouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) && mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
@@ -117,6 +137,7 @@ namespace dae
 				// mouseX yaw left & right, mouse Y moves forwards & backwards
 				const float upwards = -mouseY * movementSpeed * deltaTime;
 				origin += up * upwards;
+				hasMoved = true;
 			}
 			else if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT))
 			{
@@ -126,6 +147,7 @@ namespace dae
 
 				origin += forward * forwards;
 				totalYaw += yaw;
+				hasMoved = true;
 			}
 			else if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
 			{
@@ -135,17 +157,24 @@ namespace dae
 
 				totalPitch += pitch;
 				totalYaw += yaw;
+				hasMoved = true;
 			}
 			
-			totalPitch = std::clamp(totalPitch, -88.0f, 88.0f);
-			if (totalYaw > 360.0f)
-				totalYaw -= 360.0f;
-			else if (totalYaw < 0.0f)
-				totalYaw += 360.0f;
+			if (hasMoved)
+			{
+				
+				totalPitch = std::clamp(totalPitch, -88.0f, 88.0f);
+				if (totalYaw > 360.0f)
+					totalYaw -= 360.0f;
+				else if (totalYaw < 0.0f)
+					totalYaw += 360.0f;
 
-			const Matrix finalRotation = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
-			forward = finalRotation.TransformVector(Vector3::UnitZ);
-			forward.Normalize();
+				const Matrix finalRotation = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
+				forward = finalRotation.TransformVector(Vector3::UnitZ);
+				forward.Normalize();
+
+				updateRayDirections = true;
+			}
 		}
 	};
 }

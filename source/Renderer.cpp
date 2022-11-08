@@ -28,18 +28,23 @@ Renderer::Renderer(SDL_Window* pWindow) :
 	//Initialize
 	SDL_GetWindowSize(pWindow, &m_Width, &m_Height);
 	m_pBufferPixels = static_cast<uint32_t*>(m_pBuffer->pixels);
+	m_AspectRatio = m_Width / float(m_Height);
 	assert(RunTests());
 }
 
-void Renderer::Render(Scene* pScene) const
+void Renderer::Render(Scene* pScene)
 {
 	Camera& camera = pScene->GetCamera();
 	auto& materials = pScene->GetMaterials();
 	auto& lights = pScene->GetLights();
-	
-	const float aspectRatio{ m_Width / float(m_Height) };	
-	
 	camera.CalculateCameraToWorld();
+
+	// Only update raydirections if the camera has moved
+	if (camera.updateRayDirections)
+	{
+		RecalculateRayDirections(camera);
+		camera.updateRayDirections = false;
+	}
 
 	const uint32_t numPixels = m_Width * m_Height;
 
@@ -74,7 +79,7 @@ void Renderer::Render(Scene* pScene) const
 					const uint32_t endPixel = currPixelIndex + taskSize;
 					for (uint32_t pixelIndex{ currPixelIndex }; pixelIndex < endPixel; ++pixelIndex)
 					{
-						RenderPixel(pScene, pixelIndex, fovRatio, aspectRatio, camera, lights, materials);
+						RenderPixel(pScene, pixelIndex, camera.fovRatio, m_AspectRatio, camera, lights, materials);
 					}
 				}
 			)
@@ -97,16 +102,19 @@ void Renderer::Render(Scene* pScene) const
 #elif defined(PARALLEL_FOR)
 	// PARALLEL FOR EXECUTION
 	//concurrency::parallel_for()
-	concurrency::parallel_for((uint32_t)0, numPixels, [=, this](int pixelIndex)
+
+
+	concurrency::parallel_for(0u, numPixels,
+		[=, this](int pixelIndex)
 		{
-			RenderPixel(pScene, pixelIndex, camera.fovRatio, aspectRatio, camera, lights, materials);
+			RenderPixel(pScene, pixelIndex, camera.fovRatio, m_AspectRatio, camera, lights, materials);
 		});
 
 #else
 	// SYNCHRONOUS EXECUTION
 	for (uint32_t pixelIndex{}; pixelIndex < numPixels; ++pixelIndex)
 	{
-		RenderPixel(pScene, pixelIndex, fovRatio, aspectRatio, camera, lights, materials);
+		RenderPixel(pScene, pixelIndex, camera.fovRatio, m_AspectRatio, camera, lights, materials);
 	}
 
 #endif
@@ -121,22 +129,19 @@ void Renderer::Render(Scene* pScene) const
 
 void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float aspectRatio, const Camera& camera, const std::vector<Light>& lights, const std::vector<Material*>& materials) const
 {
-	uint32_t px{ pixelIndex % m_Width };
-	uint32_t py{ pixelIndex / m_Width };
+	const uint32_t px{ pixelIndex % m_Width };
+	const uint32_t py{ pixelIndex / m_Width };
 
-	const float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1.0f) * aspectRatio * fov };
-	const float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * fov };
+	const Vector3& rayDirection{ m_RayDirections[pixelIndex] };
 
 	float multiplier = 1.0f;
 
-	const Vector3 rayDirection{ camera.cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };
 	Ray viewRay{ camera.origin,  rayDirection };
 
 	ColorRGB finalColor{};
 	float reflectivity{};
 	for (int bounce{}; bounce < m_Bounces; bounce++)
 	{
-		
 		HitRecord closestHit{};
 		pScene->GetClosestHit(viewRay, closestHit);  // Checks EVERY object in the scene and returns the closest one hit.
 		if (closestHit.didHit)
@@ -166,7 +171,7 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 				case dae::Renderer::LightingMode::ObservedArea:
 					if ((observedArea < 0))
 						continue;  // Skip if observedarea is negative
-					finalColor += ColorRGB(observedArea, observedArea, observedArea);
+					finalColor += ColorRGB{ observedArea, observedArea, observedArea };
 					break;
 				case dae::Renderer::LightingMode::Radiance:
 					finalColor += radianceColor;
@@ -176,11 +181,10 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 					break;
 				case dae::Renderer::LightingMode::Combined:
 					if ((observedArea < 0))
-						continue;  // Skip if observedarea is negative
-					
-					
+						continue;  // Skip if observedarea is negative					
+
 					if (bounce > 0)
-					{						
+					{
 						finalColor += radianceColor * BRDF * observedArea * reflectivity * multiplier;
 					}
 					else
@@ -191,11 +195,12 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 				}
 			}
 
-			reflectivity = materials[closestHit.materialIndex]->GetReflectivity();  // Set reflecitivity of current object & update for later ones
+			if (m_ReflectionsEnabled)
+				reflectivity = materials[closestHit.materialIndex]->GetReflectivity();  // Set reflecitivity of current object & update for later ones
 			multiplier *= 0.7f;
 			viewRay.origin = closestHit.origin + closestHit.normal * 0.0001f;
 			viewRay.direction = Vector3::Reflect(viewRay.direction, closestHit.normal);
-			if (reflectivity < FLT_EPSILON || !m_ReflectionsEnabled)
+			if (!m_ReflectionsEnabled || reflectivity < FLT_EPSILON)
 				break;
 		}
 		else
@@ -203,19 +208,36 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 			ColorRGB skyColor{ colors::White };
 			finalColor += skyColor;
 		}
-		
+
 		//Update Color in Buffer
 
 
 	}
 	finalColor.MaxToOne();
-	m_pBufferPixels[px + (py * m_Width)] = SDL_MapRGB(m_pBuffer->format,
+	m_pBufferPixels[pixelIndex] = SDL_MapRGB(m_pBuffer->format,
 		static_cast<uint8_t>(finalColor.r * 255),
 		static_cast<uint8_t>(finalColor.g * 255),
 		static_cast<uint8_t>(finalColor.b * 255));
 
 }
 
+
+void Renderer::RecalculateRayDirections(Camera& camera)
+{
+	m_RayDirections.clear();
+
+	const uint32_t pixelAmount = m_Width * m_Height;
+	m_RayDirections.reserve(pixelAmount);
+	for (uint32_t pixelIndex{}; pixelIndex < pixelAmount; ++pixelIndex)
+	{
+		const uint32_t px{ pixelIndex % m_Width };
+		const uint32_t py{ pixelIndex / m_Width };
+		const float cx{ ((2.0f * (px + 0.5f) / float(m_Width)) - 1.0f) * m_AspectRatio * camera.fovRatio };
+		const float cy{ (1.0f - ((2.0f * (py + 0.5f)) / float(m_Height))) * camera.fovRatio };
+		const Vector3 rayDirection{ camera.cameraToWorld.TransformVector(Vector3{cx, cy, 1}).Normalized() };
+		m_RayDirections.emplace_back(rayDirection);
+	}
+}
 
 bool Renderer::SaveBufferToImage() const
 {

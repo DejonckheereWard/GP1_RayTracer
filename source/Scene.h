@@ -16,6 +16,7 @@ namespace dae
 	struct Light;
 
 	//Scene Base Class
+	
 	class Scene
 	{
 	public:
@@ -36,6 +37,7 @@ namespace dae
 		Camera& GetCamera() { return m_Camera; }
 		void GetClosestHit(const Ray& ray, HitRecord& closestHit) const;
 		bool DoesHit(const Ray& ray) const;
+		bool GetReflectionsEnabled() const { return m_ReflectionsEnabled; }
 
 		const std::vector<Plane>& GetPlaneGeometries() const { return m_PlaneGeometries; }
 		const std::vector<Sphere>& GetSphereGeometries() const { return m_SphereGeometries; }
@@ -51,9 +53,8 @@ namespace dae
 		std::vector<Light> m_Lights{};
 		std::vector<Material*> m_Materials{};
 		
-		// Temp for triangles
-		std::vector<Triangle> m_Triangles{};
-
+		bool m_ReflectionsEnabled{};
+		
 		Camera m_Camera{};
 
 		Sphere* AddSphere(const Vector3& origin, float radius, unsigned char materialIndex = 0);
@@ -187,6 +188,27 @@ namespace dae
 		Scene_W4_BunnyScene(Scene_W4_BunnyScene&&) noexcept = delete;
 		Scene_W4_BunnyScene& operator=(const Scene_W4_BunnyScene&) = delete;
 		Scene_W4_BunnyScene& operator=(Scene_W4_BunnyScene&&) noexcept = delete;
+
+		void Initialize() override;
+		void Update(dae::Timer* pTimer) override;
+
+	private:
+		TriangleMesh* pMesh{ nullptr };
+
+	};
+	
+	//+++++++++++++++++++++++++++++++++++++++++
+	//WEEK 4 Reference Scene
+	class Scene_W4_BunnySceneReflections final : public Scene
+	{
+	public:
+		Scene_W4_BunnySceneReflections() = default;
+		~Scene_W4_BunnySceneReflections() override = default;
+
+		Scene_W4_BunnySceneReflections(const Scene_W4_BunnySceneReflections&) = delete;
+		Scene_W4_BunnySceneReflections(Scene_W4_BunnySceneReflections&&) noexcept = delete;
+		Scene_W4_BunnySceneReflections& operator=(const Scene_W4_BunnySceneReflections&) = delete;
+		Scene_W4_BunnySceneReflections& operator=(Scene_W4_BunnySceneReflections&&) noexcept = delete;
 
 		void Initialize() override;
 		void Update(dae::Timer* pTimer) override;

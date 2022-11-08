@@ -17,12 +17,12 @@ namespace dae {
 
 	Vector3::Vector3(const Vector3& from, const Vector3& to) : x(to.x - from.x), y(to.y - from.y), z(to.z - from.z){}
 
-	inline float Vector3::Magnitude() const
+	inline float Vector3::Magnitude() const noexcept
 	{
 		return sqrtf(x * x + y * y + z * z);
 	}
 
-	float Vector3::SqrMagnitude() const
+	float Vector3::SqrMagnitude() const noexcept
 	{
 		return x * x + y * y + z * z;
 	}
@@ -30,6 +30,7 @@ namespace dae {
 	float Vector3::Normalize()
 	{
 		const float m = Magnitude();
+		
 		*this /= m;
 
 		return m;
@@ -50,12 +51,12 @@ namespace dae {
 	}
 	
 
-	inline float Vector3::Dot(const Vector3& v1, const Vector3& v2)
+	inline float Vector3::Dot(const Vector3& v1, const Vector3& v2) noexcept
 	{
 		return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 	}
 
-	Vector3 Vector3::Cross(const Vector3& v1, const Vector3& v2)
+	Vector3 Vector3::Cross(const Vector3& v1, const Vector3& v2) noexcept
 	{
 		return {
 			v1.y * v2.z - v1.z * v2.y,
@@ -79,7 +80,7 @@ namespace dae {
 		return v1 - (2.f * Dot(v1, v2) * v2);
 	}
 
-	Vector3 Vector3::Min(const Vector3& v1, const Vector3& v2)
+	Vector3 Vector3::Min(const Vector3& v1, const Vector3& v2) noexcept
 	{
 		// Get smallest components of the 2 vectors and combine into one
 		return {
@@ -90,7 +91,7 @@ namespace dae {
 		
 	}
 
-	Vector3 Vector3::Max(const Vector3& v1, const Vector3& v2)
+	Vector3 Vector3::Max(const Vector3& v1, const Vector3& v2) noexcept
 	{
 		// Get biggest components of the 2 vectors and combine into one
 		return {
@@ -100,12 +101,12 @@ namespace dae {
 		};
 	}
 
-	Vector4 Vector3::ToPoint4() const
+	Vector4 Vector3::ToPoint4() const noexcept
 	{
 		return { x, y, z, 1 };
 	}
 
-	Vector4 Vector3::ToVector4() const
+	Vector4 Vector3::ToVector4() const noexcept
 	{
 		return { x, y, z, 0 };
 	}
