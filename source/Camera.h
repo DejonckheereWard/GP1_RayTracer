@@ -45,6 +45,22 @@ namespace dae
 			fovRatio = tanf(angle * TO_RADIANS / 2.0f);
 		}
 
+		void SetYaw(float yaw)
+		{
+			totalYaw = yaw;
+
+			if (totalYaw > 360.0f)
+				totalYaw -= 360.0f;
+			else if (totalYaw < 0.0f)
+				totalYaw += 360.0f;
+
+			const Matrix finalRotation = Matrix::CreateRotationX(totalPitch * TO_RADIANS) * Matrix::CreateRotationY(totalYaw * TO_RADIANS);
+			forward = finalRotation.TransformVector(Vector3::UnitZ);
+			forward.Normalize();
+
+			updateRayDirections = true;
+		}
+
 		Matrix CalculateCameraToWorld()
 		{
 			right = Vector3::Cross(Vector3::UnitY, forward).Normalized();
@@ -56,6 +72,8 @@ namespace dae
 			//	{ forward.x, forward.y , forward.z, 0 },
 			//	{ origin.x , origin.y  , origin.z , 1 }
 			//};
+
+
 
 			cameraToWorld = Matrix{
 				right,

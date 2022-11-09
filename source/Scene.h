@@ -36,7 +36,7 @@ namespace dae
 
 		Camera& GetCamera() { return m_Camera; }
 		void GetClosestHit(const Ray& ray, HitRecord& closestHit) const;
-		bool DoesHit(const Ray& ray) const;
+		bool DoesHit(Ray& ray) const;
 		bool GetReflectionsEnabled() const { return m_ReflectionsEnabled; }
 
 		const std::vector<Plane>& GetPlaneGeometries() const { return m_PlaneGeometries; }
@@ -199,22 +199,22 @@ namespace dae
 	
 	//+++++++++++++++++++++++++++++++++++++++++
 	//WEEK 4 Reference Scene
-	class Scene_W4_BunnySceneReflections final : public Scene
+	class Scene_Extra final : public Scene
 	{
 	public:
-		Scene_W4_BunnySceneReflections() = default;
-		~Scene_W4_BunnySceneReflections() override = default;
+		Scene_Extra() = default;
+		~Scene_Extra() override = default;
 
-		Scene_W4_BunnySceneReflections(const Scene_W4_BunnySceneReflections&) = delete;
-		Scene_W4_BunnySceneReflections(Scene_W4_BunnySceneReflections&&) noexcept = delete;
-		Scene_W4_BunnySceneReflections& operator=(const Scene_W4_BunnySceneReflections&) = delete;
-		Scene_W4_BunnySceneReflections& operator=(Scene_W4_BunnySceneReflections&&) noexcept = delete;
+		Scene_Extra(const Scene_Extra&) = delete;
+		Scene_Extra(Scene_Extra&&) noexcept = delete;
+		Scene_Extra& operator=(const Scene_Extra&) = delete;
+		Scene_Extra& operator=(Scene_Extra&&) noexcept = delete;
 
 		void Initialize() override;
 		void Update(dae::Timer* pTimer) override;
 
 	private:
-		TriangleMesh* pMesh{ nullptr };
+		std::vector<TriangleMesh*> m_Meshes{};
 
 	};
 

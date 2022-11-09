@@ -35,7 +35,7 @@ namespace dae
 	{
 		Triangle() = default;
 		Triangle(const Vector3& _v0, const Vector3& _v1, const Vector3& _v2, const Vector3& _normal) :
-			v0{ _v0 }, v1{ _v1 }, v2{ _v2 }, normal{ _normal.Normalized() }
+			v0{ _v0 }, v1{ _v1 }, v2{ _v2 }, normal{ _normal }
 		{
 		}
 

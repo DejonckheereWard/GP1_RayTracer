@@ -6,6 +6,7 @@
 #include <iostream>
 
 #define MOLLER_TRUMBORE
+//#define OPTIMIZED_PLANE
 
 //#define ANALYTIC  // Use analytic sphere collision, else geometric
 
@@ -24,19 +25,19 @@ namespace dae
 			Vector3 L = sphere.origin - ray.origin;
 			float tca = Vector3::Dot(L, ray.direction);
 
-			if (tca < 0) 
-				return false;
+			//if (tca < 0) 
+			//	return false;
 			
-			float d2 = Vector3::Dot(L, L) - tca * tca;
+			float d2 = tca * tca - Vector3::Dot(L, L) + sphere.radius * sphere.radius;
 			
-			if (d2 > sphere.radius * sphere.radius)
+			if (d2 < 0.0f)
 				return false;
 			
 
-			const float thc = sqrtf(sphere.radius * sphere.radius - d2);
+			const float thc = sqrtf(d2);
 			const float t0 = tca - thc;
 
-			if (t0 >= ray.min && t0 <= ray.max)
+			if (t0 > ray.min && t0 < ray.max)
 			{
 				if (ignoreHitRecord)
 					return true;
@@ -55,18 +56,18 @@ namespace dae
 #else
 #pragma region Geometric
 			//Vector from ray origin to center of sphere
-			Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
+			const Vector3 tc{ sphere.origin - ray.origin };   // Vector TC  (T is start, C is center of sphere)
 
 			//Vector3 a{ Vector3::Dot(ray.direction, ray.direction) };
-			float dp{ Vector3::Dot(tc, ray.direction) };  // Vector TP  (P is perpendicular to the raycast, and goes to C)
-			float odSqr{ tc.SqrMagnitude() - Square(dp) };  // Power of length between P & C
-			if (odSqr > Square(sphere.radius))
+			const float dp{ Vector3::Dot(tc, ray.direction) };  // Vector TP  (P is perpendicular to the raycast, and goes to C)
+			const float odSqr{ tc.SqrMagnitude() - (dp* dp) };  // Power of length between P & C
+			if (odSqr > (sphere.radius * sphere.radius))
 			{
 				// Optimization, if odSqr is larger than radius square, it's a miss.
 				return false;
 			}
-			float tca{ sqrtf(Square(sphere.radius) - odSqr) };  // Distance I1 P
-			float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
+			const float tca{ sqrtf((sphere.radius * sphere.radius) - odSqr) };  // Distance I1 P
+			const float ti1{ dp - tca };  // Distance from origin to Intersection Point 1
 
 
 			if (ti1 >= ray.min && ti1 <= ray.max)
@@ -96,11 +97,33 @@ namespace dae
 		//PLANE HIT-TESTS
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
-			//todo W1
+//#ifdef OPTIMIZED_PLANE
+			//const float denominator{ Vector3::Dot(plane.normal, ray.direction) };
 
-			// Check if ray hits the plane, and where the hit is.
+			//if (abs(denominator) > FLT_EPSILON)
+			//{
+			//	Vector3 rayOriginToPlaneOrigin{plane.origin - ray.origin };
+			//	const float t{ Vector3::Dot(rayOriginToPlaneOrigin, plane.normal) / denominator};
 
-			// Calculate distance hitPoint
+			//	// Check if T exceeds the boundaries set in the ray struct (tMin & tMax)
+			//	if (t >= ray.min && t <= ray.max)
+			//	{
+			//		// We can calculate where point P is, by multiplying the direction, with the distance (t) found earlier.
+			//		// Add that to the ray's origin to find P
+			//		if (ignoreHitRecord) 
+			//			return true;
+
+			//		hitRecord.didHit = true;
+			//		hitRecord.materialIndex = plane.materialIndex;
+			//		hitRecord.normal = plane.normal;
+			//		hitRecord.origin = ray.origin + (t * ray.direction);
+			//		hitRecord.t = t;
+			//		return true;
+
+			//	}
+			//}
+			//return false;
+//#else
 			const float rayDotNormal{ Vector3::Dot((plane.origin - ray.origin), plane.normal) };
 
 			if (rayDotNormal > 0.0f)
@@ -123,6 +146,7 @@ namespace dae
 
 			}
 			return false;
+//#endif
 		}
 
 		inline bool HitTest_Plane(const Plane& plane, const Ray& ray)
@@ -291,20 +315,20 @@ namespace dae
 		{
 			// Perform slabtest on the mesh (acceleration structures)
 
-			float tx1 = (mesh.transformedMinAABB.x - ray.origin.x) / ray.direction.x;
-			float tx2 = (mesh.transformedMaxAABB.x - ray.origin.x) / ray.direction.x;
+			const float tx1 = (mesh.transformedMinAABB.x - ray.origin.x) / ray.direction.x;
+			const float tx2 = (mesh.transformedMaxAABB.x - ray.origin.x) / ray.direction.x;
 
 			float tmin = std::min(tx1, tx2);
 			float tmax = std::max(tx1, tx2);
 
-			float ty1 = (mesh.transformedMinAABB.y - ray.origin.y) / ray.direction.y;
-			float ty2 = (mesh.transformedMaxAABB.y - ray.origin.y) / ray.direction.y;
+			const float ty1 = (mesh.transformedMinAABB.y - ray.origin.y) / ray.direction.y;
+			const float ty2 = (mesh.transformedMaxAABB.y - ray.origin.y) / ray.direction.y;
 
 			tmin = std::max(tmin, std::min(ty1, ty2));
 			tmax = std::min(tmax, std::max(ty1, ty2));
 
-			float tz1 = (mesh.transformedMinAABB.z - ray.origin.z) / ray.direction.z;
-			float tz2 = (mesh.transformedMaxAABB.z - ray.origin.z) / ray.direction.z;
+			const float tz1 = (mesh.transformedMinAABB.z - ray.origin.z) / ray.direction.z;
+			const float tz2 = (mesh.transformedMaxAABB.z - ray.origin.z) / ray.direction.z;
 
 			tmin = std::max(tmin, std::min(tz1, tz2));
 			tmax = std::min(tmax, std::max(tz1, tz2));
@@ -313,7 +337,7 @@ namespace dae
 
 		}
 
-		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
+		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, Ray& ray, HitRecord& hitRecord, bool ignoreHitRecord = false)
 		{
 			// Opitimization using slabtest
 			// Checks if ray hits the slab/bounding box (AABB), stops the calculation if ray doesn't hit this box
@@ -321,10 +345,11 @@ namespace dae
 				return false;
 						
 			// Loop through all triangles in the mesh, and check if they hit the ray.
-			Triangle triangle{};
+			Triangle triangle;
 			const size_t trianglePositionsSize{ mesh.positions.size() };
 			const size_t meshIndicesSize{ mesh.indices.size() };
 
+			//HitRecord tempHitrecord{};
 			for (size_t i{}; i < meshIndicesSize; i += 3)
 			{
 				triangle.v0 = mesh.transformedPositions[mesh.indices[i]];
@@ -334,24 +359,21 @@ namespace dae
 				triangle.cullMode = mesh.cullMode;
 				triangle.materialIndex = mesh.materialIndex;
 
-				HitRecord tempHitrecord{};
-				if (HitTest_Triangle(triangle, ray, tempHitrecord, ignoreHitRecord))
+
+				if (HitTest_Triangle(triangle, ray, hitRecord, ignoreHitRecord))
 				{
 					if (ignoreHitRecord)
-					{						
-						return true;
-					}					
-					else if (tempHitrecord.t > 0.0f && tempHitrecord.t < hitRecord.t)
 					{
-						hitRecord = tempHitrecord;
+						return true;
 					}
+					ray.max = hitRecord.t;
 
-				}
+				}				
 			}
 			return hitRecord.didHit;
 		}
 
-		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, const Ray& ray)
+		inline bool HitTest_TriangleMesh(const TriangleMesh& mesh, Ray& ray)
 		{
 			HitRecord temp{};
 			return HitTest_TriangleMesh(mesh, ray, temp, true);

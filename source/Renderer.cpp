@@ -205,7 +205,7 @@ void Renderer::RenderPixel(Scene* pScene, uint32_t pixelIndex, float fov, float 
 		}
 		else
 		{
-			ColorRGB skyColor{ colors::White };
+			const ColorRGB skyColor{ colors::White };
 			finalColor += skyColor;
 		}
 
@@ -248,6 +248,10 @@ void dae::Renderer::CycleLightingMode()
 {
 	switch (m_CurrentLightingMode)
 	{
+	case dae::Renderer::LightingMode::Combined:
+		m_CurrentLightingMode = LightingMode::ObservedArea;
+		std::cout << "LightingMode: ObservedArea\n";
+		break;
 	case dae::Renderer::LightingMode::ObservedArea:
 		m_CurrentLightingMode = LightingMode::Radiance;
 		std::cout << "LightingMode: Radiance\n";
@@ -259,10 +263,6 @@ void dae::Renderer::CycleLightingMode()
 	case dae::Renderer::LightingMode::BRDF:
 		m_CurrentLightingMode = LightingMode::Combined;
 		std::cout << "LightingMode: Combined\n";
-		break;
-	case dae::Renderer::LightingMode::Combined:
-		m_CurrentLightingMode = LightingMode::ObservedArea;
-		std::cout << "LightingMode: ObservedArea\n";
 		break;
 	}
 }

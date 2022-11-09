@@ -13,12 +13,12 @@ namespace dae
 		 */
 		static ColorRGB Lambert(float kd, const ColorRGB& cd)
 		{
-			return { kd * cd / PI };
+			return { kd * cd * DIV_PI };  // DIV PI is 1 / PI;
 		}
 
 		static ColorRGB Lambert(const ColorRGB& kd, const ColorRGB& cd)
 		{
-			return { kd * cd / PI };
+			return { kd * cd * DIV_PI };  // DIV PI is 1 / PI;
 		}
 
 		/**
@@ -32,7 +32,7 @@ namespace dae
 		 */
 		static ColorRGB Phong(float ks, float exp, const Vector3& l, const Vector3& v, const Vector3& n)
 		{
-			Vector3 reflect{ l - (2 * Vector3::Dot(n, l) * n) };
+			const Vector3 reflect{ l - (2 * Vector3::Dot(n, l) * n) };
 			const float RdotV{ std::max(0.0f, Vector3::Dot(reflect, v)) };
 			const float specularReflection{ ks * powf(RdotV, exp) };
 			return { specularReflection, specularReflection, specularReflection };
@@ -59,10 +59,10 @@ namespace dae
 		 */
 		static float NormalDistribution_GGX(const Vector3& n, const Vector3& h, float roughness)
 		{
-			const float a{ Square(roughness) };
+			const float a{ (roughness * roughness) };
 			const float nDotH{ Vector3::Dot(n, h) };
-			const float denom{ Square(nDotH) * (Square(a) - 1.0f) + 1.0f};
-			return Square(a) / (float(M_PI) * Square(denom));
+			const float denom{ (nDotH * nDotH) * ((a * a) - 1.0f) + 1.0f};
+			return (a * a) / (PI * (denom * denom));
 		}
 
 
@@ -76,7 +76,7 @@ namespace dae
 		static float GeometryFunction_SchlickGGX(const Vector3& n, const Vector3& v, float roughness)
 		{
 			const float nDotV{ std::max(Vector3::Dot(n, v), 0.0f )};
-			const float kDirect{ Square(Square(roughness) + 1.0f) / 8.0f };
+			const float kDirect{ Square((roughness * roughness) + 1.0f) * 0.125f};  // * 0.125f = / 8.0f
 			return nDotV / (nDotV * (1.0f - kDirect) + kDirect);
 		}
 

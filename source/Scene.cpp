@@ -57,13 +57,14 @@ namespace dae
 		
 	}
 
-	bool Scene::DoesHit(const Ray& ray) const
+	bool Scene::DoesHit(Ray& ray) const
 	{
-		for (const Plane& plane : m_PlaneGeometries)
-		{
-			if (GeometryUtils::HitTest_Plane(plane, ray))
-				return true;
-		}
+		// Do planes need shadows?? nooooo
+		//for (const Plane& plane : m_PlaneGeometries)
+		//{
+		//	if (GeometryUtils::HitTest_Plane(plane, ray))
+		//		return true;
+		//}
 
 		for (const Sphere& sphere : m_SphereGeometries)
 		{
@@ -444,7 +445,7 @@ namespace dae
 		// Ptimer gettotal time will increase the longer the scene runs (accumulated time)
 
 
-		const float yawAngle = (cos(pTimer->GetTotal()) + 1.f) / 2.f * PI_2;
+		const float yawAngle = (cos(pTimer->GetTotal()) + 1.f) * 0.5f * PI_2;
 		for (TriangleMesh* mesh : m_Meshes)
 		{
 			mesh->RotateY(yawAngle);
@@ -459,13 +460,6 @@ namespace dae
 		m_Camera.SetFov(45.0f);
 
 		// Materials
-		const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 1.f));
-		const auto matCt_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.6f));
-		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.1f));
-
-		const auto matCt_GrayRoughPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 1.f));
-		const auto matCt_GrayMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 0.6f));
-		const auto matCt_GraySmoothPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 0.1f));
 
 		const auto matLambert_GrayBlue = AddMaterial(new Material_Lambert({ 0.49f, 0.57f, 0.57f }, 1.f));
 		const auto matLambert_White = AddMaterial(new Material_Lambert(colors::White, 1.f));
@@ -505,57 +499,91 @@ namespace dae
 		pMesh->UpdateTransforms();
 	}
 
-	void Scene_W4_BunnySceneReflections::Initialize()
+	void Scene_Extra::Initialize()
 	{
 		sceneName = "Bunny Scene with mirror";
 		m_ReflectionsEnabled = true;
-		m_Camera.origin = { 0.f, 3.f, -9.f };
+		m_Camera.origin = { -2.5f, 3.f, -9.f };
+		m_Camera.SetYaw(25.0f);
 		m_Camera.SetFov(45.0f);
 
 		// Materials
 		//const auto matCt_GrayRoughMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 1.f));
 		//const auto matCt_GrayMediumMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.6f));
-		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.1f));
+		const auto matCt_GraySmoothMetal = AddMaterial(new Material_CookTorrence({ 0.972f, 0.96f, 0.915f }, 1.f, 0.05f));
 
 		//const auto matCt_GrayRoughPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 1.f));
-		//const auto matCt_GrayMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 0.6f));
+		const auto matCt_RedMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.8f, 0.2f, 0.3f }, 0.f, 0.6f));
+		const auto matCt_GreenMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.2f, 0.8f, 0.2f }, 0.f, 0.6f));
+		const auto matCt_BlueMediumPlastic = AddMaterial(new Material_CookTorrence({ 0.0f, 0.80f, 1.0f }, 0.f, 0.8f));
 		//const auto matCt_GraySmoothPlastic = AddMaterial(new Material_CookTorrence({ 0.75f, 0.75f, 0.75f }, 0.f, 0.1f));
 
-		const auto matLambert_GrayBlue = AddMaterial(new Material_Lambert({ 0.49f, 0.57f, 0.57f }, 1.f));
+		//const auto matLambert_Blue = AddMaterial(new Material_Lambert({ 0.0f, 0.80f, 1.0f }, 1.f));
 		const auto matLambert_White = AddMaterial(new Material_Lambert(colors::White, 1.f));
 
 		// Planes
-		AddPlane({ 0.f, 0.f, 10.f }, { 0.f, 0.f, -1.f }, matLambert_GrayBlue);	// BACK
-		AddPlane({ 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }, matLambert_GrayBlue);	// BOTTOM
-		AddPlane({ 0.f, 10.f, 0.f }, { 0.f, -1.f, 0.f }, matLambert_GrayBlue);  // TOP
+		AddPlane({ 0.f, 0.f, 10.f }, { 0.f, 0.f, -1.f }, matCt_BlueMediumPlastic);	// BACK
+		AddPlane({ 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }, matCt_GreenMediumPlastic);	// BOTTOM
+		AddPlane({ 0.f, 10.f, 0.f }, { 0.f, -1.f, 0.f }, matCt_BlueMediumPlastic);  // TOP
 		AddPlane({ 5.f, 0.f, 0.f }, { -1.f, 0.f, 0.f }, matCt_GraySmoothMetal);	// RIGHT
-		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matLambert_GrayBlue);	// LEFT
+		AddPlane({ -5.f, 0.f, 0.f }, { 1.f, 0.f, 0.f }, matCt_BlueMediumPlastic);	// LEFT
+
+		// Reflective Sphere
+		AddSphere({ 0.f, 4.f, 2.f }, 1.0f, matCt_GraySmoothMetal);
 
 		// Bunny
-		pMesh = AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White);
-		//Utils::ParseOBJ("Resources/truck2.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		TriangleMesh* pMesh = m_Meshes.emplace_back(AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White));
 		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh->Translate({ -2.f, 0.f, 2.f });
+		pMesh->RotateY({ 10.f });
 
-		//pMesh->CalculateNormals();
-		pMesh->Scale({ 2.f, 2.f, 2.f });
-		//pMesh->Scale({ 0.05f, 0.05f, 0.05f });
-		//pMesh->Translate({ 0.f, 2.f, 0.f });
+		pMesh = m_Meshes.emplace_back(AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White));
+		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh->Translate({ 2.f, 0.f, 2.f });
+		pMesh->RotateY({ -25.f });
 
-		pMesh->UpdateAABB();
-		pMesh->UpdateTransforms();
+		pMesh = m_Meshes.emplace_back(AddTriangleMesh(TriangleCullMode::BackFaceCulling, matLambert_White));
+		Utils::ParseOBJ("Resources/lowpoly_bunny2.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh->Translate({ 0.f, 0.f, 3.f });
+		pMesh->RotateY({ 35.f });
+
+		// Companion cube
+		pMesh = m_Meshes.emplace_back(AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCt_RedMediumPlastic));
+		Utils::ParseOBJ("Resources/lowpoly_CompanionCube.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh->Translate({ 3.5f, 0.75f, 7.f });
+		pMesh->RotateY({ 45.f });
+		pMesh->Scale({ 3.f, 3.f, 3.f });
+
+		pMesh = m_Meshes.emplace_back(AddTriangleMesh(TriangleCullMode::BackFaceCulling, matCt_RedMediumPlastic));
+		Utils::ParseOBJ("Resources/lowpoly_CompanionCube.obj", pMesh->positions, pMesh->normals, pMesh->indices);
+		pMesh->Translate({ -3.5f, 0.75f, 7.f });
+		pMesh->RotateY({ 20.f });
+		pMesh->Scale({ 3.f, 3.f, 3.f });
+
+		for (TriangleMesh* pMesh : m_Meshes)
+		{
+			pMesh->UpdateAABB();
+			pMesh->UpdateTransforms();
+		}
 
 		// Lights
-		AddPointLight({ 0.f, 5.f, 5.f }, 50.f, { 1.f, .61f, .45f }); // BACKLIGHT
+		AddPointLight({ -2.f, 6.f, 5.f }, 50.f, { 1.f, .61f, .45f }); // BACKLIGHT
 		AddPointLight({ -2.5f, 5.f, -5.f }, 70.f, { 1.f, .8f, .45f }); // FRONT LIGHT LEFT
 		AddPointLight({ 2.5f, 2.5f, -5.f }, 50.f, { 0.34f, .47f, .68f });
 	}
-	void Scene_W4_BunnySceneReflections::Update(dae::Timer* pTimer)
+	void Scene_Extra::Update(dae::Timer* pTimer)
 	{
 		Scene::Update(pTimer);
 
-		const float yawAngle = (cos(pTimer->GetTotal()) + 1.f) / 2.f * PI_2;
+		float multiplier = 1.0f;
 
-		pMesh->RotateY(yawAngle);
-		pMesh->UpdateTransforms();
+		for (TriangleMesh* pMesh : m_Meshes)
+		{
+			multiplier /= 0.7f;
+			const float yawAngle = (pTimer->GetTotal() + 1.f) * 0.5f * PI_2 / multiplier;
+			pMesh->RotateY(yawAngle);
+			pMesh->UpdateTransforms();
+		}
+
 	}
 }
