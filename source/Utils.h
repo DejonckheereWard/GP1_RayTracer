@@ -211,7 +211,7 @@ namespace dae
 				if (ignoreHitRecord) return true;
 				hitRecord.didHit = true;
 				hitRecord.materialIndex = triangle.materialIndex;
-				hitRecord.origin = ray.origin + (t * ray.direction);
+				hitRecord.origin = ray.origin + (ray.direction * t);
 				hitRecord.normal = triangle.normal;
 				hitRecord.t = t;
 				return true;
@@ -345,10 +345,11 @@ namespace dae
 				return false;
 						
 			// Loop through all triangles in the mesh, and check if they hit the ray.
-			Triangle triangle;
+		
 			const size_t trianglePositionsSize{ mesh.positions.size() };
 			const size_t meshIndicesSize{ mesh.indices.size() };
 
+			Triangle triangle;
 			//HitRecord tempHitrecord{};
 			for (size_t i{}; i < meshIndicesSize; i += 3)
 			{
